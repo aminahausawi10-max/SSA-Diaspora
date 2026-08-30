@@ -201,6 +201,11 @@ export default function Home() {
         localStorage.setItem('ssa_usertype', data.type);
         setLoginEmail('');
         setLoginPassword('');
+        if (data.type === 'STAFF') {
+          setActiveTab('admin');
+        } else {
+          setActiveTab('portal');
+        }
         fetchData();
       } else {
         setLoginError(data.error || 'Login failed.');
@@ -1798,13 +1803,15 @@ export default function Home() {
             <span>Portal</span>
           </button>
 
-          <button 
-            onClick={() => setActiveTab('admin')}
-            className={`sticky-nav-btn ${activeTab === 'admin' ? 'active' : ''}`}
-          >
-            <Briefcase size={18} />
-            <span>Admin</span>
-          </button>
+          {userType === 'STAFF' && (
+            <button 
+              onClick={() => setActiveTab('admin')}
+              className={`sticky-nav-btn ${activeTab === 'admin' ? 'active' : ''}`}
+            >
+              <Briefcase size={18} />
+              <span>Admin</span>
+            </button>
+          )}
 
           <button 
             onClick={() => setActiveTab('verify')}
