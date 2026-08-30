@@ -125,6 +125,22 @@ export async function PUT(request: Request) {
     });
 
     await db.updateCase(caseItem);
+
+    // Trigger case progress notification
+    try {
+      const { notifications } = await import('@/lib/notifications');
+      await notifications.sendCaseUpdateNotification(
+        caseItem.memberId,
+        caseItem.memberName || 'Diaspora Member',
+        caseItem.caseNumber,
+        status,
+        note || `Case status updated to ${status}.`,
+        caseItem.phoneNumber
+      );
+    } catch (notifyErr) {
+      console.error('Failed to trigger case update notification:', notifyErr);
+    }
+
     return NextResponse.json({ success: true, case: caseItem });
 
   } catch (error: any) {

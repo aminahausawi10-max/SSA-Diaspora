@@ -108,6 +108,18 @@ export async function POST(request: Request) {
 
     const saved = await db.createMember(newMember);
 
+    // Trigger welcome notification
+    try {
+      const { notifications } = await import('@/lib/notifications');
+      await notifications.sendWelcomeNotification(
+        saved.account.email, 
+        saved.fullName, 
+        saved.overseasAddress.phone
+      );
+    } catch (notifyErr) {
+      console.error('Failed to trigger welcome notification:', notifyErr);
+    }
+
     // Don't return password hash to client
     const { passwordHash: _, ...safeAccount } = saved.account;
     return NextResponse.json({

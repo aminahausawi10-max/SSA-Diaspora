@@ -48,6 +48,21 @@ export async function PUT(request: Request) {
 
     await db.updateMember(member);
 
+    // Trigger approval notification
+    if (status === 'APPROVED' && member.diasporaId) {
+      try {
+        const { notifications } = await import('@/lib/notifications');
+        await notifications.sendApprovalNotification(
+          member.account.email,
+          member.fullName,
+          member.diasporaId,
+          member.overseasAddress.phone
+        );
+      } catch (notifyErr) {
+        console.error('Failed to trigger approval notification:', notifyErr);
+      }
+    }
+
     const { passwordHash: _, ...safeAccount } = member.account;
     return NextResponse.json({
       success: true,
