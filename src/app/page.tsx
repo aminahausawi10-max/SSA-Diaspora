@@ -1076,12 +1076,15 @@ export default function Home() {
                   <hr className="border-slate-200/50" />
                   
                   {/* Mock accounts credentials lookup */}
-                  <div className="space-y-2 text-xs">
+                  <div className="space-y-2 text-xs bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                     <p className="font-bold text-slate-700">Quick Test Staff Logins (Password in brackets):</p>
                     <ul className="list-disc pl-5 space-y-1 text-slate-500">
-                      <li>Verification Officer: <code className="bg-slate-100 p-0.5 rounded">verification@ssa.gov.ng</code> (verify123)</li>
-                      <li>Case Handler: <code className="bg-slate-100 p-0.5 rounded">case@ssa.gov.ng</code> (case123)</li>
-                      <li>UK Desk Lead: <code className="bg-slate-100 p-0.5 rounded">ukdesk@ssa.gov.ng</code> (desk123)</li>
+                      <li>Super Admin: <code className="bg-white/80 px-1 py-0.5 rounded border">super@ssa.gov.ng</code> (super123)</li>
+                      <li>Administrator: <code className="bg-white/80 px-1 py-0.5 rounded border">admin@ssa.gov.ng</code> (admin123)</li>
+                      <li>Verification Officer: <code className="bg-white/80 px-1 py-0.5 rounded border">verification@ssa.gov.ng</code> (verify123)</li>
+                      <li>Case Handler: <code className="bg-white/80 px-1 py-0.5 rounded border">case@ssa.gov.ng</code> (case123)</li>
+                      <li>UK Desk Lead: <code className="bg-white/80 px-1 py-0.5 rounded border">ukdesk@ssa.gov.ng</code> (desk123)</li>
+                      <li>USA Desk Lead: <code className="bg-white/80 px-1 py-0.5 rounded border">usadesk@ssa.gov.ng</code> (desk123)</li>
                     </ul>
                   </div>
                 </form>
