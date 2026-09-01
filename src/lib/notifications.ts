@@ -137,7 +137,7 @@ export const notifications = {
       <div style="font-family: sans-serif; padding: 20px; color: #333;">
         <h2>Case Progress Update</h2>
         <p>Dear ${name}, the status of your reported case (<strong>${caseNumber}</strong>) has been updated.</p>
-        <p>New Status: <strong style="text-transform: uppercase; color: #3b82f6;">${status}</strong></p>
+        <p>New Status: <strong style="text-transform: uppercase; color: #059669;">${status}</strong></p>
         <p><strong>Update Notes:</strong> ${notes}</p>
         <p>Log in to your member portal to view full case logs.</p>
         <hr style="border: 0; border-top: 1px solid #eee;" />

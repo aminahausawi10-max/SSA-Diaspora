@@ -499,7 +499,7 @@ export default function Home() {
             {/* QUICK ACTIONS GRID */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="clay-card p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1 transition-transform" onClick={() => setActiveTab('register')}>
-                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto shadow-inner">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
                   <User size={24} />
                 </div>
                 <h3 className="font-bold text-slate-800">1. Online Register</h3>
@@ -646,7 +646,7 @@ export default function Home() {
                 <div key={num} className="flex items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
                     regStep === num 
-                      ? 'bg-blue-600 text-white shadow-lg scale-110' 
+                      ? 'bg-emerald-600 text-white shadow-lg scale-110' 
                       : regStep > num 
                         ? 'bg-emerald-600 text-white' 
                         : 'bg-white text-slate-400 border border-slate-200 shadow-inner'
@@ -948,7 +948,7 @@ export default function Home() {
 
                   {/* Contact 2 */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-lg">Emergency Contact 2 — Country of Residence</h4>
+                    <h4 className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">Emergency Contact 2 — Country of Residence</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Full Name</label>
@@ -1067,7 +1067,7 @@ export default function Home() {
                   <div className="text-center pt-2">
                     <p className="text-xs text-slate-500">
                       Don't have an account?{' '}
-                      <span className="text-blue-600 font-semibold cursor-pointer" onClick={() => setActiveTab('register')}>
+                      <span className="text-emerald-600 font-semibold cursor-pointer" onClick={() => setActiveTab('register')}>
                         Register as Member
                       </span>
                     </p>
@@ -1184,7 +1184,7 @@ export default function Home() {
                       <button onClick={handlePrintCard} className="clay-btn bg-emerald-600 clay-btn-green px-4 py-2 text-xs flex items-center gap-1">
                         <Printer size={14} /> Print ID
                       </button>
-                      <button onClick={handleDownloadCard} className="clay-btn bg-blue-600 px-4 py-2 text-xs flex items-center gap-1">
+                      <button onClick={handleDownloadCard} className="clay-btn bg-emerald-600 clay-btn-green px-4 py-2 text-xs flex items-center gap-1">
                         <Download size={14} /> Download ID
                       </button>
                     </div>
@@ -1307,7 +1307,7 @@ export default function Home() {
                                 {preview.startsWith('data:image/') ? (
                                   <img src={preview} className="w-full h-full object-cover" />
                                 ) : preview.startsWith('data:audio/') ? (
-                                  <Volume2 size={18} className="text-blue-500" />
+                                  <Volume2 size={18} className="text-emerald-500" />
                                 ) : preview.startsWith('data:video/') ? (
                                   <Video size={18} className="text-red-500" />
                                 ) : (
@@ -1349,7 +1349,7 @@ export default function Home() {
                             <div key={item.id} className="clay-card-inner p-4 space-y-3">
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <span className="text-xs font-bold text-blue-800 bg-blue-50 px-2 py-0.5 rounded">
+                                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
                                     {item.caseNumber}
                                   </span>
                                   <h4 className="font-bold text-slate-800 text-sm mt-1">{item.category}</h4>
@@ -1357,7 +1357,7 @@ export default function Home() {
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                   item.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800' :
                                   item.status === 'REFERRED' ? 'bg-amber-100 text-amber-800' :
-                                  'bg-blue-100 text-blue-800'
+                                  'bg-emerald-100 text-emerald-800'
                                 }`}>
                                   {item.status}
                                 </span>
@@ -1430,7 +1430,7 @@ export default function Home() {
                   </div>
                   <div className="clay-card p-4 space-y-1">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Active Cases</span>
-                    <p className="text-2xl font-black text-blue-600">
+                    <p className="text-2xl font-black text-emerald-600">
                       {cases.filter(c => c.status !== 'RESOLVED').length}
                     </p>
                     <span className="text-[10px] text-red-600 font-bold">{stats.urgentCases} flagged urgent</span>
@@ -1445,7 +1445,7 @@ export default function Home() {
                 {/* Country Desks stats and filters */}
                 <div className="clay-card p-4 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
-                    <Globe size={18} className="text-blue-600" />
+                    <Globe size={18} className="text-emerald-600" />
                     <span className="text-sm font-bold text-slate-700">Country Desk Filter:</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1455,7 +1455,7 @@ export default function Home() {
                         onClick={() => setSelectedCountryDesk(desk)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                           selectedCountryDesk === desk 
-                            ? 'bg-blue-600 text-white shadow-inner' 
+                            ? 'bg-emerald-600 text-white shadow-inner' 
                             : 'bg-white text-slate-600 border border-slate-100 hover:bg-slate-50'
                         }`}
                       >
@@ -1498,7 +1498,7 @@ export default function Home() {
                               {m.identification.documentUrl && (
                                 <a 
                                   href={m.identification.documentUrl} target="_blank" rel="noreferrer"
-                                  className="text-[10px] text-blue-600 hover:underline flex items-center gap-1"
+                                  className="text-[10px] text-emerald-600 hover:underline flex items-center gap-1"
                                 >
                                   <FileText size={12} /> View Uploaded Verification Document <ExternalLink size={10} />
                                 </a>
@@ -1575,8 +1575,8 @@ export default function Home() {
                           <div 
                             key={c.id} 
                             onClick={() => setSelectedCase(c)}
-                            className={`clay-card-inner p-4 space-y-3 cursor-pointer hover:border-blue-300 transition-all ${
-                              selectedCase?.id === c.id ? 'border-2 border-blue-400 bg-blue-50/20' : ''
+                            className={`clay-card-inner p-4 space-y-3 cursor-pointer hover:border-emerald-300 transition-all ${
+                              selectedCase?.id === c.id ? 'border-2 border-emerald-400 bg-emerald-50/20' : ''
                             }`}
                           >
                             <div className="flex justify-between items-start">
@@ -1590,7 +1590,7 @@ export default function Home() {
                               </div>
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 c.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800' :
-                                c.status === 'REFERRED' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                                c.status === 'REFERRED' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                               }`}>
                                 {c.status}
                               </span>
@@ -1635,7 +1635,7 @@ export default function Home() {
                               {selectedCase.mediaUrls.map((url: string, index: number) => (
                                 <a 
                                   key={index} href={url} target="_blank" rel="noreferrer"
-                                  className="p-1 rounded bg-slate-100 border text-[10px] text-blue-600 flex items-center gap-1 hover:underline"
+                                  className="p-1 rounded bg-slate-100 border text-[10px] text-emerald-600 flex items-center gap-1 hover:underline"
                                 >
                                   File {index + 1} <ExternalLink size={10} />
                                 </a>
@@ -1691,7 +1691,7 @@ export default function Home() {
                             />
                           </div>
 
-                          <button type="submit" className="clay-btn bg-blue-600 w-full py-2 text-xs">
+                          <button type="submit" className="clay-btn bg-emerald-600 clay-btn-green w-full py-2 text-xs">
                             Assign Agency Referral
                           </button>
                         </form>

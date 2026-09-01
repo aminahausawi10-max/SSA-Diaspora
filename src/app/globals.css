@@ -36,12 +36,12 @@ body {
 
 /* Claymorphic Buttons */
 .clay-btn {
-  background: #3b82f6;
+  background: #10b981;
   color: white;
   border-radius: 16px;
   box-shadow: 
-    3px 3px 6px rgba(59, 130, 246, 0.2),
-    8px 8px 16px rgba(59, 130, 246, 0.15),
+    3px 3px 6px rgba(16, 185, 129, 0.2),
+    8px 8px 16px rgba(16, 185, 129, 0.15),
     inset -3px -3px 6px rgba(0, 0, 0, 0.2),
     inset 3px 3px 6px rgba(255, 255, 255, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -56,8 +56,8 @@ body {
 .clay-btn:hover {
   transform: translateY(-2px);
   box-shadow: 
-    4px 4px 10px rgba(59, 130, 246, 0.25),
-    10px 10px 20px rgba(59, 130, 246, 0.2),
+    4px 4px 10px rgba(16, 185, 129, 0.25),
+    10px 10px 20px rgba(16, 185, 129, 0.2),
     inset -3px -3px 6px rgba(0, 0, 0, 0.15),
     inset 3px 3px 6px rgba(255, 255, 255, 0.55);
 }
@@ -65,7 +65,7 @@ body {
 .clay-btn:active {
   transform: translateY(1px);
   box-shadow: 
-    1px 1px 3px rgba(59, 130, 246, 0.3),
+    1px 1px 3px rgba(16, 185, 129, 0.3),
     inset -1px -1px 3px rgba(0, 0, 0, 0.25),
     inset 1px 1px 3px rgba(255, 255, 255, 0.4);
 }
@@ -139,9 +139,9 @@ body {
 
 .clay-input:focus {
   background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: rgba(16, 185, 129, 0.4);
   box-shadow: 
-    0 0 0 3px rgba(59, 130, 246, 0.15),
+    0 0 0 3px rgba(16, 185, 129, 0.15),
     inset 2px 2px 5px rgba(166, 180, 200, 0.15),
     inset -2px -2px 5px rgba(255, 255, 255, 0.9);
 }
@@ -204,10 +204,10 @@ body {
 }
 
 .sticky-nav-btn.active {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
   box-shadow: 
-    inset 2px 2px 5px rgba(59, 130, 246, 0.1),
+    inset 2px 2px 5px rgba(16, 185, 129, 0.1),
     inset -2px -2px 5px rgba(255, 255, 255, 0.8);
 }
 
