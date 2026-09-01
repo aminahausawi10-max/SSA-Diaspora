@@ -139,6 +139,7 @@ export async function POST(request: Request) {
         status: 'PENDING',
         diasporaId: null,
         issueDate: null,
+        isRegistered: false,
         createdAt: new Date().toISOString()
       };
 
@@ -164,7 +165,7 @@ export async function POST(request: Request) {
 
     // Prepare safe member response
     const { passwordHash: _, ...safeAccount } = member.account;
-    const isNew = !member.identification?.passportNumber || member.fullName === 'Diaspora Member';
+    const isNew = member.isRegistered === false || !member.identification?.passportNumber || member.fullName === 'Diaspora Member';
 
     return NextResponse.json({
       success: true,
@@ -172,6 +173,7 @@ export async function POST(request: Request) {
       isNew: isNew,
       user: {
         ...member,
+        isRegistered: !isNew,
         account: safeAccount
       }
     });

@@ -53,6 +53,7 @@ export interface Member {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
   diasporaId: string | null;
   issueDate: string | null;
+  isRegistered?: boolean;
   createdAt: string;
 }
 

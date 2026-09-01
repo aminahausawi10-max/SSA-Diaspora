@@ -456,9 +456,15 @@ export default function Home() {
           {currentUser ? (
             <div className="flex items-center gap-3">
               <div className="text-right hidden md:block">
-                <p className="text-sm font-semibold text-slate-800">{currentUser.fullName}</p>
+                <p className="text-sm font-semibold text-slate-800">
+                  {userType === 'STAFF' 
+                    ? currentUser.fullName 
+                    : (currentUser.isRegistered ? currentUser.fullName : (currentUser.account?.email || currentUser.email))}
+                </p>
                 <p className="text-xs font-medium text-slate-500">
-                  {userType === 'STAFF' ? `${currentUser.role.replace('_', ' ')}` : 'Member'}
+                  {userType === 'STAFF' 
+                    ? `${currentUser.role.replace('_', ' ')}` 
+                    : (currentUser.isRegistered ? 'Verified Member' : 'Pending Registration')}
                 </p>
               </div>
               <button 
@@ -1107,8 +1113,37 @@ export default function Home() {
               </div>
             )}
 
-            {/* IF LOGGED IN AS DIASPORA MEMBER */}
-            {currentUser && userType === 'MEMBER' && (
+            {/* IF LOGGED IN AS DIASPORA MEMBER BUT REGISTRATION NOT COMPLETED */}
+            {currentUser && userType === 'MEMBER' && !currentUser.isRegistered && (
+              <div className="clay-card p-8 text-center space-y-5 max-w-lg mx-auto no-print">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+                  <User size={32} />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-slate-800">Complete Your Registration</h3>
+                  <p className="text-sm text-slate-500">
+                    Welcome! You are signed in with <strong>{currentUser.account?.email || currentUser.email}</strong>. Your profile details, Virtual ID card, and case reporting will become visible as soon as you submit your registration details.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => {
+                    setRegData(prev => ({
+                      ...prev,
+                      email: currentUser.account?.email || currentUser.email || '',
+                      password: ''
+                    }));
+                    setRegStep(1);
+                    setActiveTab('register');
+                  }}
+                  className="clay-btn bg-emerald-600 clay-btn-green py-3 px-8 text-sm text-white"
+                >
+                  Fill Registration Form Now <ArrowRight size={16} className="ml-1" />
+                </button>
+              </div>
+            )}
+
+            {/* IF LOGGED IN AS FULLY REGISTERED DIASPORA MEMBER */}
+            {currentUser && userType === 'MEMBER' && currentUser.isRegistered && (
               <div className="space-y-10">
                 
                 {/* Profile Overview and Virtual Card */}

@@ -102,6 +102,7 @@ export async function POST(request: Request) {
       status: existingUser?.status || 'PENDING',
       diasporaId: existingUser?.diasporaId || null,
       issueDate: existingUser?.issueDate || null,
+      isRegistered: true,
       createdAt: existingUser?.createdAt || new Date().toISOString(),
     };
 
