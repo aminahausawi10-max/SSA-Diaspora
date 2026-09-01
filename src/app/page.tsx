@@ -298,22 +298,35 @@ export default function Home() {
     }
   };
 
-  // Admin: Approve Member
-  const handleApproveMember = async (memberId: string) => {
-    if (!confirm('Are you sure you want to approve and generate a Diaspora ID for this member?')) return;
+  // Admin: Approve Member with Custom Diaspora ID written by Admin
+  const handleApproveMember = async (memberId: string, customDiasporaId?: string) => {
+    let assignedId = customDiasporaId?.trim();
+    if (!assignedId) {
+      const entered = prompt('Please enter the Diaspora ID Number to assign to this member:');
+      if (entered === null) return;
+      assignedId = entered.trim();
+    }
+    if (!assignedId) {
+      alert('Diaspora ID is required to approve this member.');
+      return;
+    }
+
     try {
       const res = await fetch('/api/members', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: memberId, status: 'APPROVED' })
+        body: JSON.stringify({ id: memberId, status: 'APPROVED', diasporaId: assignedId })
       });
       const data = await res.json();
       if (data.success) {
-        alert('Member Approved! Diaspora ID Generated.');
+        alert(`Member Approved! Assigned Diaspora ID: ${assignedId}`);
         fetchData();
+      } else {
+        alert(data.error || 'Failed to approve member.');
       }
     } catch (err) {
       console.error(err);
+      alert('Error updating member verification.');
     }
   };
 
@@ -1652,19 +1665,37 @@ export default function Home() {
                                 </a>
                               )}
 
-                              <div className="flex gap-2 justify-end">
-                                <button 
-                                  onClick={() => handleRejectMember(m.id)}
-                                  className="clay-btn clay-btn-red text-[10px] px-3 py-1.5"
-                                >
-                                  Reject / Corrections
-                                </button>
-                                <button 
-                                  onClick={() => handleApproveMember(m.id)}
-                                  className="clay-btn bg-emerald-600 clay-btn-green text-[10px] px-3 py-1.5"
-                                >
-                                  Approve & Generate ID
-                                </button>
+                              <div className="space-y-1 pt-1">
+                                <label className="text-[10px] font-bold text-slate-700 block">
+                                  Assign Diaspora ID Number:
+                                </label>
+                                <div className="flex flex-col sm:flex-row gap-2 items-center">
+                                  <input 
+                                    type="text" 
+                                    id={`diaspora-id-${m.id}`}
+                                    defaultValue={m.diasporaId || `SSA-DIA-2026-${String(members.filter(x => x.diasporaId).length + 1).padStart(6, '0')}`}
+                                    placeholder="e.g. SSA-DIA-2026-000001" 
+                                    className="clay-input w-full text-xs font-bold uppercase tracking-wider text-emerald-800 bg-white"
+                                  />
+                                  <div className="flex gap-2 shrink-0 w-full sm:w-auto justify-end">
+                                    <button 
+                                      onClick={() => handleRejectMember(m.id)}
+                                      className="clay-btn clay-btn-red text-[10px] px-3 py-2"
+                                    >
+                                      Reject
+                                    </button>
+                                    <button 
+                                      onClick={() => {
+                                        const inputEl = document.getElementById(`diaspora-id-${m.id}`) as HTMLInputElement;
+                                        const customId = inputEl?.value || '';
+                                        handleApproveMember(m.id, customId);
+                                      }}
+                                      className="clay-btn bg-emerald-600 clay-btn-green text-[10px] px-4 py-2 text-white font-bold"
+                                    >
+                                      Verify & Assign ID
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           ))

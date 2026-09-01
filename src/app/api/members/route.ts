@@ -22,7 +22,7 @@ export async function GET() {
 // PUT /api/members (Update verification status)
 export async function PUT(request: Request) {
   try {
-    const { id, status } = await request.json();
+    const { id, status, diasporaId } = await request.json();
 
     if (!id || !status) {
       return NextResponse.json({ error: 'Member ID and status are required.' }, { status: 400 });
@@ -37,12 +37,15 @@ export async function PUT(request: Request) {
 
     member.status = status;
 
-    // Generate Diaspora ID if approved and not yet set
-    if (status === 'APPROVED' && !member.diasporaId) {
-      const seq = await db.getNextMemberSequence();
-      // Format sequence to 6 digits, e.g., SSA-DIA-2026-000001
-      const formattedSeq = String(seq).padStart(6, '0');
-      member.diasporaId = `SSA-DIA-2026-${formattedSeq}`;
+    // Set Diaspora ID specified by the Admin
+    if (status === 'APPROVED') {
+      if (diasporaId && typeof diasporaId === 'string' && diasporaId.trim()) {
+        member.diasporaId = diasporaId.trim().toUpperCase();
+      } else if (!member.diasporaId) {
+        const seq = await db.getNextMemberSequence();
+        const formattedSeq = String(seq).padStart(6, '0');
+        member.diasporaId = `SSA-DIA-2026-${formattedSeq}`;
+      }
       member.issueDate = new Date().toISOString().split('T')[0];
     }
 
