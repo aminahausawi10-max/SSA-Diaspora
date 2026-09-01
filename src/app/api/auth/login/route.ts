@@ -163,6 +163,19 @@ export async function POST(request: Request) {
       }
     }
 
+    // Send Sign-In security notification to user's email
+    try {
+      const { notifications } = await import('@/lib/notifications');
+      await notifications.sendLoginNotification(
+        member.account.email,
+        member.fullName,
+        new Date().toLocaleString(),
+        member.overseasAddress?.phone
+      );
+    } catch (err) {
+      console.error('Sign-in notification simulation error:', err);
+    }
+
     // Prepare safe member response
     const { passwordHash: _, ...safeAccount } = member.account;
     const isNew = member.isRegistered === false || !member.identification?.passportNumber || member.fullName === 'Diaspora Member';

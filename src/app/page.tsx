@@ -66,6 +66,11 @@ export default function Home() {
   // Country Desk selection for Admin filtering
   const [selectedCountryDesk, setSelectedCountryDesk] = useState('All');
 
+  // Diaspora ID Portal Access State
+  const [showDiasporaIdModal, setShowDiasporaIdModal] = useState(false);
+  const [inputDiasporaId, setInputDiasporaId] = useState('');
+  const [diasporaIdError, setDiasporaIdError] = useState('');
+
   // Load and refresh initial data
   const fetchData = async () => {
     try {
@@ -414,6 +419,39 @@ export default function Home() {
       }
     } catch (err) {
       setVerificationError('Error connecting to validation engine.');
+    }
+  };
+
+  // Diaspora ID Direct Portal Access
+  const handleDiasporaIdLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDiasporaIdError('');
+    if (!inputDiasporaId.trim()) return;
+
+    try {
+      const cleanId = inputDiasporaId.trim().toUpperCase();
+      const res = await fetch('/api/members');
+      const data = await res.json();
+      if (data.success && data.members) {
+        const found = data.members.find((m: any) => m.diasporaId?.toUpperCase() === cleanId);
+        if (found) {
+          const registeredUser = { ...found, isRegistered: true };
+          setCurrentUser(registeredUser);
+          setUserType('MEMBER');
+          localStorage.setItem('ssa_user', JSON.stringify(registeredUser));
+          localStorage.setItem('ssa_usertype', 'MEMBER');
+          setShowDiasporaIdModal(false);
+          setInputDiasporaId('');
+          setActiveTab('portal');
+        } else {
+          setDiasporaIdError('No matching Diaspora ID found. Please check your ID number or complete the registration form below.');
+        }
+      } else {
+        setDiasporaIdError('Unable to connect to verification server.');
+      }
+    } catch (err) {
+      console.error(err);
+      setDiasporaIdError('Error verifying Diaspora ID.');
     }
   };
 
@@ -1035,6 +1073,56 @@ export default function Home() {
                 )}
               </div>
             </form>
+
+            {/* Already Registered? Diaspora ID Access Section */}
+            <div className="clay-card p-5 text-center space-y-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                <span className="text-xs text-slate-500">Already completed your registration?</span>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setShowDiasporaIdModal(!showDiasporaIdModal);
+                    setDiasporaIdError('');
+                  }}
+                  className="text-xs font-bold text-emerald-600 hover:text-emerald-700 underline flex items-center gap-1"
+                >
+                  <Award size={14} /> Already Registered? Enter Diaspora ID
+                </button>
+              </div>
+
+              {showDiasporaIdModal && (
+                <div className="clay-card-inner p-5 space-y-4 border border-emerald-300 bg-emerald-50/40 text-left">
+                  <div>
+                    <h4 className="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
+                      <Shield size={16} className="text-emerald-600" /> Enter Your Diaspora ID to Access Portal
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Enter your generated Diaspora ID number below to unlock and enter your Member Portal directly:
+                    </p>
+                  </div>
+
+                  {diasporaIdError && (
+                    <div className="bg-rose-50 text-rose-700 text-xs p-3 rounded-lg border border-rose-200">
+                      {diasporaIdError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleDiasporaIdLogin} className="flex flex-col sm:flex-row gap-2">
+                    <input 
+                      type="text" 
+                      required 
+                      className="clay-input flex-1 text-xs uppercase" 
+                      placeholder="e.g. SSA-DIA-2026-000001"
+                      value={inputDiasporaId} 
+                      onChange={e => setInputDiasporaId(e.target.value)}
+                    />
+                    <button type="submit" className="clay-btn bg-emerald-600 clay-btn-green px-5 py-2 text-xs text-white whitespace-nowrap">
+                      Access Portal <ArrowRight size={14} className="ml-1" />
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
