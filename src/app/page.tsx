@@ -199,10 +199,24 @@ export default function Home() {
         setUserType(data.type);
         localStorage.setItem('ssa_user', JSON.stringify(data.user));
         localStorage.setItem('ssa_usertype', data.type);
+        
+        const enteredEmail = loginEmail;
+        const enteredPassword = loginPassword;
         setLoginEmail('');
         setLoginPassword('');
+
         if (data.type === 'STAFF') {
           setActiveTab('admin');
+        } else if (data.isNew || !data.user.identification?.passportNumber || data.user.fullName === 'Diaspora Member') {
+          // Open registration form pre-filled with email & password to complete required details
+          setRegData(prev => ({
+            ...prev,
+            fullName: (data.user.fullName && data.user.fullName !== 'Diaspora Member') ? data.user.fullName : '',
+            email: data.user.account?.email || enteredEmail,
+            password: enteredPassword
+          }));
+          setRegStep(1);
+          setActiveTab('register');
         } else {
           setActiveTab('portal');
         }

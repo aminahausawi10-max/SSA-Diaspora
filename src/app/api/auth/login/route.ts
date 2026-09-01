@@ -164,9 +164,12 @@ export async function POST(request: Request) {
 
     // Prepare safe member response
     const { passwordHash: _, ...safeAccount } = member.account;
+    const isNew = !member.identification?.passportNumber || member.fullName === 'Diaspora Member';
+
     return NextResponse.json({
       success: true,
       type: 'MEMBER',
+      isNew: isNew,
       user: {
         ...member,
         account: safeAccount

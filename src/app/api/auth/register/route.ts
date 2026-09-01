@@ -22,25 +22,24 @@ export async function POST(request: Request) {
 
     // Check if user already exists
     const existingUser = await db.getMemberByEmail(email);
-    if (existingUser) {
-      return NextResponse.json({ error: 'A member with this email address already exists.' }, { status: 400 });
-    }
 
     // Process photo upload to Cloudinary
-    let photoUrl = '';
+    let photoUrl = existingUser?.photoUrl || '';
     if (photoBase64) {
       try {
         photoUrl = await uploadToCloudinary(photoBase64, 'ssa_diaspora/photographs');
       } catch (uploadErr) {
         console.error('Photo upload failed, using default placeholder:', uploadErr);
-        photoUrl = 'https://res.cloudinary.com/dpghoiocq/image/upload/v1700000000/placeholder_user.png';
+        if (!photoUrl) {
+          photoUrl = 'https://res.cloudinary.com/dpghoiocq/image/upload/v1700000000/placeholder_user.png';
+        }
       }
-    } else {
+    } else if (!photoUrl) {
       photoUrl = 'https://res.cloudinary.com/dpghoiocq/image/upload/v1700000000/placeholder_user.png';
     }
 
     // Process document upload to Cloudinary
-    let documentUrl = '';
+    let documentUrl = existingUser?.identification?.documentUrl || '';
     if (documentBase64) {
       try {
         documentUrl = await uploadToCloudinary(documentBase64, 'ssa_diaspora/documents');
@@ -50,14 +49,14 @@ export async function POST(request: Request) {
     }
 
     // Hash Password
-    const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+    const passwordHash = password ? crypto.createHash('sha256').update(password).digest('hex') : (existingUser?.account?.passwordHash || '');
 
     // Construct Member object
-    const newMember: Member = {
-      id: crypto.randomUUID(),
+    const memberData: Member = {
+      id: existingUser?.id || crypto.randomUUID(),
       fullName,
-      dob,
-      gender,
+      dob: dob || '1995-01-01',
+      gender: gender || 'Male',
       photoUrl,
       stateOfOrigin: body.stateOfOrigin || '',
       lga: body.lga || '',
@@ -68,7 +67,7 @@ export async function POST(request: Request) {
         phone: nigerianPhone || '',
       },
       overseasAddress: {
-        country: overseasCountry || '',
+        country: overseasCountry || 'United Kingdom',
         state: overseasState || '',
         city: overseasCity || '',
         street: overseasStreet || '',
@@ -80,10 +79,10 @@ export async function POST(request: Request) {
         documentUrl,
       },
       account: {
-        email,
+        email: email.toLowerCase().trim(),
         passwordHash,
-        phoneVerified: true, // Auto-verified for simple MVP
-        emailVerified: true, // Auto-verified for simple MVP
+        phoneVerified: true,
+        emailVerified: true,
         privacyConsent: true,
       },
       emergencyContacts: {
@@ -100,13 +99,18 @@ export async function POST(request: Request) {
           phone: emergencyOsPhone || '',
         },
       },
-      status: 'PENDING',
-      diasporaId: null,
-      issueDate: null,
-      createdAt: new Date().toISOString(),
+      status: existingUser?.status || 'PENDING',
+      diasporaId: existingUser?.diasporaId || null,
+      issueDate: existingUser?.issueDate || null,
+      createdAt: existingUser?.createdAt || new Date().toISOString(),
     };
 
-    const saved = await db.createMember(newMember);
+    let saved: Member;
+    if (existingUser) {
+      saved = await db.updateMember(memberData);
+    } else {
+      saved = await db.createMember(memberData);
+    }
 
     // Trigger welcome notification
     try {
