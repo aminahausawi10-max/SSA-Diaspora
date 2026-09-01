@@ -158,7 +158,7 @@ export async function POST(request: Request) {
       }
     } else {
       // If member is not yet fully registered, update their password hash and allow sign in
-      if (member.isRegistered === false || !member.identification?.passportNumber || member.fullName === 'Diaspora Member') {
+      if (member.isRegistered !== true) {
         member.account.passwordHash = incomingHash;
         await db.updateMember(member);
       } else if (member.account.passwordHash !== incomingHash) {
@@ -181,7 +181,7 @@ export async function POST(request: Request) {
 
     // Prepare safe member response
     const { passwordHash: _, ...safeAccount } = member.account;
-    const isNew = member.isRegistered === false || !member.identification?.passportNumber || member.fullName === 'Diaspora Member';
+    const isNew = member.isRegistered !== true;
 
     return NextResponse.json({
       success: true,
