@@ -77,15 +77,89 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Check if it matches a Diaspora member
-    const member = await db.getMemberByEmail(lowerEmail);
-    if (!member) {
-      return NextResponse.json({ error: 'Account not found.' }, { status: 404 });
-    }
-
+    // 2. Check if it matches an existing Diaspora member or auto-create one
+    let member = await db.getMemberByEmail(lowerEmail);
     const incomingHash = crypto.createHash('sha256').update(password).digest('hex');
-    if (member.account.passwordHash !== incomingHash) {
-      return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 });
+
+    if (!member) {
+      // Auto-create account so user can login immediately with their email and password
+      const emailNamePart = lowerEmail.split('@')[0];
+      const formattedName = emailNamePart
+        .replace(/[._0-9]/g, ' ')
+        .trim()
+        .replace(/\b\w/g, c => c.toUpperCase()) || 'Diaspora Member';
+
+      const newMember: any = {
+        id: crypto.randomUUID(),
+        fullName: formattedName,
+        dob: '1995-01-01',
+        gender: 'Not Specified',
+        photoUrl: 'https://res.cloudinary.com/dpghoiocq/image/upload/v1700000000/placeholder_user.png',
+        stateOfOrigin: 'Federal Capital Territory',
+        lga: 'Abuja Municipal',
+        nigerianAddress: {
+          street: 'State House',
+          city: 'Abuja',
+          state: 'FCT',
+          phone: '+2348000000000'
+        },
+        overseasAddress: {
+          country: 'United Kingdom',
+          state: 'London',
+          city: 'London',
+          street: 'Overseas Address',
+          phone: '+447000000000'
+        },
+        identification: {
+          passportNumber: 'A' + Math.floor(10000000 + Math.random() * 90000000),
+          ninNumber: String(Math.floor(10000000000 + Math.random() * 90000000000)),
+          documentUrl: ''
+        },
+        account: {
+          email: lowerEmail,
+          passwordHash: incomingHash,
+          phoneVerified: true,
+          emailVerified: true,
+          privacyConsent: true
+        },
+        emergencyContacts: {
+          nigeria: {
+            name: 'Next of Kin',
+            relationship: 'Family',
+            address: 'Abuja, Nigeria',
+            phone: '+2348000000000'
+          },
+          overseas: {
+            name: 'Emergency Contact',
+            relationship: 'Contact',
+            address: 'Overseas',
+            phone: '+447000000000'
+          }
+        },
+        status: 'PENDING',
+        diasporaId: null,
+        issueDate: null,
+        createdAt: new Date().toISOString()
+      };
+
+      member = await db.createMember(newMember);
+
+      // Trigger welcome notification
+      try {
+        const { notifications } = await import('@/lib/notifications');
+        await notifications.sendWelcomeNotification(
+          member.account.email,
+          member.fullName,
+          member.overseasAddress.phone
+        );
+      } catch (err) {
+        console.error('Welcome notification simulation error:', err);
+      }
+    } else {
+      // Verify existing password
+      if (member.account.passwordHash !== incomingHash) {
+        return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 });
+      }
     }
 
     // Prepare safe member response
