@@ -129,58 +129,62 @@ function writeLocalDb(db: typeof defaultDb) {
   }
 }
 
-// Neon Postgres Table Auto-Creation helper
-async function initNeonDb(pool: Pool) {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS diaspora_members (
-        id VARCHAR(255) PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        data JSONB NOT NULL,
-        diaspora_id VARCHAR(50) UNIQUE,
-        status VARCHAR(50) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS diaspora_cases (
-        id VARCHAR(255) PRIMARY KEY,
-        case_number VARCHAR(50) UNIQUE NOT NULL,
-        member_id VARCHAR(255) NOT NULL,
-        category VARCHAR(100) NOT NULL,
-        status VARCHAR(50) NOT NULL,
-        country VARCHAR(100) NOT NULL,
-        is_urgent BOOLEAN DEFAULT FALSE,
-        data JSONB NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS diaspora_news (
-        id VARCHAR(255) PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        content TEXT NOT NULL,
-        category VARCHAR(100) NOT NULL,
-        author VARCHAR(100) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-  } catch (error) {
-    console.error('Failed to auto-create Neon SQL tables:', error);
-  }
-}
-
 // Check database environment
-const databaseUrl = process.env.DATABASE_URL;
+const rawDatabaseUrl = process.env.DATABASE_URL;
+const databaseUrl = rawDatabaseUrl ? rawDatabaseUrl.trim().replace(/^["']|["']$/g, '') : undefined;
 let neonPool: Pool | null = null;
+let isInitialized = false;
+let initPromise: Promise<void> | null = null;
 
 if (databaseUrl) {
   try {
     neonPool = new Pool({ connectionString: databaseUrl });
-    initNeonDb(neonPool);
   } catch (e) {
     console.error('Neon DB pool initialization error:', e);
   }
+}
+
+async function ensureNeonInitialized() {
+  if (!neonPool || isInitialized) return;
+  if (!initPromise) {
+    initPromise = (async () => {
+      try {
+        await neonPool.query(`
+          CREATE TABLE IF NOT EXISTS diaspora_members (
+            id VARCHAR(255) PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            data JSONB NOT NULL,
+            diaspora_id VARCHAR(50) UNIQUE,
+            status VARCHAR(50) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+          CREATE TABLE IF NOT EXISTS diaspora_cases (
+            id VARCHAR(255) PRIMARY KEY,
+            case_number VARCHAR(50) UNIQUE NOT NULL,
+            member_id VARCHAR(255) NOT NULL,
+            category VARCHAR(100) NOT NULL,
+            status VARCHAR(50) NOT NULL,
+            country VARCHAR(100) NOT NULL,
+            is_urgent BOOLEAN DEFAULT FALSE,
+            data JSONB NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+          CREATE TABLE IF NOT EXISTS diaspora_news (
+            id VARCHAR(255) PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            content TEXT NOT NULL,
+            category VARCHAR(100) NOT NULL,
+            author VARCHAR(100) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        isInitialized = true;
+      } catch (error) {
+        console.error('Failed to auto-create Neon SQL tables:', error);
+      }
+    })();
+  }
+  await initPromise;
 }
 
 export const db = {
@@ -188,6 +192,7 @@ export const db = {
   async getMembers(): Promise<Member[]> {
     if (neonPool) {
       try {
+        await ensureNeonInitialized();
         const result = await neonPool.query(`SELECT data FROM diaspora_members ORDER BY created_at DESC`);
         return result.rows.map((r: any) => r.data as Member);
       } catch (e) {
@@ -200,7 +205,8 @@ export const db = {
   async getMemberByEmail(email: string): Promise<Member | null> {
     if (neonPool) {
       try {
-        const result = await neonPool.query(`SELECT data FROM diaspora_members WHERE email = $1`, [email.toLowerCase()]);
+        await ensureNeonInitialized();
+        const result = await neonPool.query(`SELECT data FROM diaspora_members WHERE email = $1`, [email.toLowerCase().trim()]);
         if (result.rows.length > 0) return result.rows[0].data as Member;
         return null;
       } catch (e) {
@@ -208,13 +214,14 @@ export const db = {
       }
     }
     const local = readLocalDb();
-    return local.members.find(m => m.account.email.toLowerCase() === email.toLowerCase()) || null;
+    return local.members.find(m => m.account.email.toLowerCase().trim() === email.toLowerCase().trim()) || null;
   },
 
   async getMemberByDiasporaId(diasporaId: string): Promise<Member | null> {
     if (neonPool) {
       try {
-        const result = await neonPool.query(`SELECT data FROM diaspora_members WHERE diaspora_id = $1`, [diasporaId]);
+        await ensureNeonInitialized();
+        const result = await neonPool.query(`SELECT data FROM diaspora_members WHERE diaspora_id = $1`, [diasporaId.trim()]);
         if (result.rows.length > 0) return result.rows[0].data as Member;
         return null;
       } catch (e) {
@@ -222,15 +229,17 @@ export const db = {
       }
     }
     const local = readLocalDb();
-    return local.members.find(m => m.diasporaId === diasporaId) || null;
+    return local.members.find(m => m.diasporaId === diasporaId.trim()) || null;
   },
 
   async createMember(member: Member): Promise<Member> {
     if (neonPool) {
       try {
+        await ensureNeonInitialized();
         await neonPool.query(
-          `INSERT INTO diaspora_members (id, email, data, diaspora_id, status) VALUES ($1, $2, $3, $4, $5)`,
-          [member.id, member.account.email.toLowerCase(), JSON.stringify(member), member.diasporaId, member.status]
+          `INSERT INTO diaspora_members (id, email, data, diaspora_id, status) VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (email) DO UPDATE SET data = $3, status = $5, diaspora_id = $4`,
+          [member.id, member.account.email.toLowerCase().trim(), JSON.stringify(member), member.diasporaId, member.status]
         );
         return member;
       } catch (e) {
@@ -238,7 +247,12 @@ export const db = {
       }
     }
     const local = readLocalDb();
-    local.members.push(member);
+    const existingIdx = local.members.findIndex(m => m.account.email.toLowerCase().trim() === member.account.email.toLowerCase().trim());
+    if (existingIdx !== -1) {
+      local.members[existingIdx] = member;
+    } else {
+      local.members.push(member);
+    }
     writeLocalDb(local);
     return member;
   },
@@ -246,9 +260,10 @@ export const db = {
   async updateMember(member: Member): Promise<Member> {
     if (neonPool) {
       try {
+        await ensureNeonInitialized();
         await neonPool.query(
           `UPDATE diaspora_members SET data = $1, diaspora_id = $2, status = $3 WHERE email = $4`,
-          [JSON.stringify(member), member.diasporaId, member.status, member.account.email.toLowerCase()]
+          [JSON.stringify(member), member.diasporaId, member.status, member.account.email.toLowerCase().trim()]
         );
         return member;
       } catch (e) {
@@ -256,7 +271,7 @@ export const db = {
       }
     }
     const local = readLocalDb();
-    const idx = local.members.findIndex(m => m.id === member.id);
+    const idx = local.members.findIndex(m => m.id === member.id || m.account.email.toLowerCase().trim() === member.account.email.toLowerCase().trim());
     if (idx !== -1) {
       local.members[idx] = member;
       writeLocalDb(local);
@@ -268,6 +283,7 @@ export const db = {
   async getCases(): Promise<Case[]> {
     if (neonPool) {
       try {
+        await ensureNeonInitialized();
         const result = await neonPool.query(`SELECT data FROM diaspora_cases ORDER BY created_at DESC`);
         return result.rows.map((r: any) => r.data as Case);
       } catch (e) {
@@ -280,22 +296,24 @@ export const db = {
   async getCasesByMember(email: string): Promise<Case[]> {
     if (neonPool) {
       try {
-        const result = await neonPool.query(`SELECT data FROM diaspora_cases WHERE member_id = $1 ORDER BY created_at DESC`, [email.toLowerCase()]);
+        await ensureNeonInitialized();
+        const result = await neonPool.query(`SELECT data FROM diaspora_cases WHERE member_id = $1 ORDER BY created_at DESC`, [email.toLowerCase().trim()]);
         return result.rows.map((r: any) => r.data as Case);
       } catch (e) {
         console.error('Neon getCasesByMember error, using local file:', e);
       }
     }
-    return readLocalDb().cases.filter(c => c.memberId === email);
+    return readLocalDb().cases.filter(c => c.memberId.toLowerCase().trim() === email.toLowerCase().trim());
   },
 
   async createCase(newCase: Case): Promise<Case> {
     if (neonPool) {
       try {
+        await ensureNeonInitialized();
         await neonPool.query(
           `INSERT INTO diaspora_cases (id, case_number, member_id, category, status, country, is_urgent, data) 
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [newCase.id, newCase.caseNumber, newCase.memberId.toLowerCase(), newCase.category, newCase.status, newCase.country, newCase.isUrgent, JSON.stringify(newCase)]
+          [newCase.id, newCase.caseNumber, newCase.memberId.toLowerCase().trim(), newCase.category, newCase.status, newCase.country, newCase.isUrgent, JSON.stringify(newCase)]
         );
         return newCase;
       } catch (e) {
@@ -311,6 +329,7 @@ export const db = {
   async updateCase(updatedCase: Case): Promise<Case> {
     if (neonPool) {
       try {
+        await ensureNeonInitialized();
         await neonPool.query(
           `UPDATE diaspora_cases SET status = $1, is_urgent = $2, data = $3 WHERE id = $4`,
           [updatedCase.status, updatedCase.isUrgent, JSON.stringify(updatedCase), updatedCase.id]
@@ -333,6 +352,7 @@ export const db = {
   async getNews(): Promise<News[]> {
     if (neonPool) {
       try {
+        await ensureNeonInitialized();
         const result = await neonPool.query(`SELECT id, title, content, category, author, created_at FROM diaspora_news ORDER BY created_at DESC`);
         return result.rows.map((r: any) => ({
           id: r.id,
@@ -352,6 +372,7 @@ export const db = {
   async createNews(item: News): Promise<News> {
     if (neonPool) {
       try {
+        await ensureNeonInitialized();
         await neonPool.query(
           `INSERT INTO diaspora_news (id, title, content, category, author, created_at) VALUES ($1, $2, $3, $4, $5, $6)`,
           [item.id, item.title, item.content, item.category, item.author, item.createdAt]

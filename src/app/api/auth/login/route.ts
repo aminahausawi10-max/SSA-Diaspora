@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       const formattedName = emailNamePart
         .replace(/[._0-9]/g, ' ')
         .trim()
-        .replace(/\b\w/g, c => c.toUpperCase()) || 'Diaspora Member';
+        .replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Diaspora Member';
 
       const newMember: any = {
         id: crypto.randomUUID(),
