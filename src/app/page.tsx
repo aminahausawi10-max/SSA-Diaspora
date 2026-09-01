@@ -121,8 +121,19 @@ export default function Home() {
     const storedUser = localStorage.getItem('ssa_user');
     const storedType = localStorage.getItem('ssa_usertype');
     if (storedUser && storedType) {
-      setCurrentUser(JSON.parse(storedUser));
-      setUserType(storedType as any);
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (storedType === 'STAFF' || parsed.isRegistered) {
+          setCurrentUser(parsed);
+          setUserType(storedType as any);
+        } else {
+          localStorage.removeItem('ssa_user');
+          localStorage.removeItem('ssa_usertype');
+        }
+      } catch (e) {
+        localStorage.removeItem('ssa_user');
+        localStorage.removeItem('ssa_usertype');
+      }
     }
   }, []);
 

@@ -157,8 +157,11 @@ export async function POST(request: Request) {
         console.error('Welcome notification simulation error:', err);
       }
     } else {
-      // Verify existing password
-      if (member.account.passwordHash !== incomingHash) {
+      // If member is not yet fully registered, update their password hash and allow sign in
+      if (member.isRegistered === false || !member.identification?.passportNumber || member.fullName === 'Diaspora Member') {
+        member.account.passwordHash = incomingHash;
+        await db.updateMember(member);
+      } else if (member.account.passwordHash !== incomingHash) {
         return NextResponse.json({ error: 'Incorrect password.' }, { status: 401 });
       }
     }
