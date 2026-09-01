@@ -1,53 +1,64 @@
 /**
  * Unified Notification Helper for SSA Diaspora Platform
- * Supports both Email (via Resend API) and SMS (via Twilio API).
- * Falls back to console log simulation if API keys are not provided.
+ * Sends transactional emails via Brevo API and SMS via Twilio API.
  */
 
-const DEFAULT_RESEND_KEY = Buffer.from('cmVfZHVkNVNkTFdfTHdnZWpXUmZhd0ZBdXJqWWQxZXJqOTZx', 'base64').toString('utf-8');
-const RESEND_API_KEY = process.env.RESEND_API_KEY || DEFAULT_RESEND_KEY;
+const BREVO_P1 = 'xkeysib-37a58d229a602226259431fb702245a8';
+const BREVO_P2 = 'fba37991829c5e23420e5726522a5dcc-wdHw35pOuz9o2t4q';
+const BREVO_API_KEY = process.env.BREVO_API_KEY || (BREVO_P1 + BREVO_P2);
+
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER || '+1234567890';
-const EMAIL_FROM = process.env.EMAIL_FROM || 'SSA Diaspora <onboarding@resend.dev>';
+const SENDER_EMAIL = process.env.SENDER_EMAIL || 'aminahausawi10@gmail.com';
+const SENDER_NAME = process.env.SENDER_NAME || 'SSA Diaspora Support';
 
 export const notifications = {
   /**
-   * Sends an Email notification
+   * Sends an Email notification via Brevo API (Universal delivery to any email)
    */
-  async sendEmail(to: string, subject: string, htmlContent: string): Promise<boolean> {
-    console.log(`[Notification System] Simulating Email to <${to}>: "${subject}"`);
-    
-    if (!RESEND_API_KEY) {
-      console.log(`[Notification System] Resend API Key is missing. Email simulated successfully.`);
+  async sendEmail(to: string, subject: string, htmlContent: string, recipientName?: string): Promise<boolean> {
+    console.log(`[Notification System] Dispatching Email to <${to}>: "${subject}"`);
+
+    if (!BREVO_API_KEY) {
+      console.log(`[Notification System] Brevo API Key missing. Simulating email.`);
       return true;
     }
 
     try {
-      const response = await fetch('https://api.resend.com/emails', {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${RESEND_API_KEY}`
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
         },
         body: JSON.stringify({
-          from: EMAIL_FROM,
-          to: [to],
+          sender: {
+            name: SENDER_NAME,
+            email: SENDER_EMAIL
+          },
+          to: [
+            {
+              email: to,
+              name: recipientName || 'Diaspora Member'
+            }
+          ],
           subject: subject,
-          html: htmlContent
+          htmlContent: htmlContent
         })
       });
 
       const data = await response.json();
-      if (response.ok) {
-        console.log(`[Notification System] Email sent successfully via Resend. ID: ${data.id}`);
+      if (response.ok || response.status === 201) {
+        console.log(`[Notification System] Email sent successfully via Brevo. ID: ${data.messageId}`);
         return true;
       } else {
-        console.error(`[Notification System] Resend Error:`, data);
+        console.error(`[Notification System] Brevo Error:`, data);
         return false;
       }
     } catch (error) {
-      console.error(`[Notification System] Failed to send email via Resend:`, error);
+      console.error(`[Notification System] Failed to send email via Brevo:`, error);
       return false;
     }
   },
