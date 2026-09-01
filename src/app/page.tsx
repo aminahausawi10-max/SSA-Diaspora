@@ -5,7 +5,7 @@ import {
   User, Shield, FileText, CheckCircle, AlertTriangle, Info, Clock, 
   MapPin, Phone, Mail, Award, Download, Printer, ExternalLink, 
   Search, Upload, ArrowRight, ArrowLeft, Send, Plus, Briefcase, 
-  Globe, Radio, Volume2, Video, Eye, EyeOff, Lock
+  Globe, Radio, Volume2, Video, Eye, EyeOff, Lock, Edit
 } from 'lucide-react';
 
 export default function Home() {
@@ -298,16 +298,16 @@ export default function Home() {
     }
   };
 
-  // Admin: Approve Member with Custom Diaspora ID written by Admin
+  // Admin: Approve Member with Custom Diaspora ID written manually by Admin
   const handleApproveMember = async (memberId: string, customDiasporaId?: string) => {
     let assignedId = customDiasporaId?.trim();
     if (!assignedId) {
-      const entered = prompt('Please enter the Diaspora ID Number to assign to this member:');
+      const entered = prompt('Please enter the Diaspora ID Number to assign to this member (e.g. SSA-DIA-2026-000001):');
       if (entered === null) return;
       assignedId = entered.trim();
     }
     if (!assignedId) {
-      alert('Diaspora ID is required to approve this member.');
+      alert('You must write a Diaspora ID Number to approve this member.');
       return;
     }
 
@@ -319,7 +319,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.success) {
-        alert(`Member Approved! Assigned Diaspora ID: ${assignedId}`);
+        alert(`Member Approved! Assigned Diaspora ID: ${assignedId.toUpperCase()}`);
         fetchData();
       } else {
         alert(data.error || 'Failed to approve member.');
@@ -327,6 +327,34 @@ export default function Home() {
     } catch (err) {
       console.error(err);
       alert('Error updating member verification.');
+    }
+  };
+
+  // Admin: Edit / Change Member Diaspora ID
+  const handleEditDiasporaId = async (memberId: string, currentId?: string | null) => {
+    const entered = prompt('Edit / Write the Diaspora ID Number for this member:', currentId || '');
+    if (entered === null) return;
+    if (!entered.trim()) {
+      alert('Diaspora ID Number cannot be empty.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/members', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: memberId, diasporaId: entered.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Diaspora ID updated successfully to: ${entered.trim().toUpperCase()}`);
+        fetchData();
+      } else {
+        alert(data.error || 'Failed to update Diaspora ID.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error connecting to server.');
     }
   };
 
@@ -1665,16 +1693,16 @@ export default function Home() {
                                 </a>
                               )}
 
-                              <div className="space-y-1 pt-1">
+                              <div className="space-y-1.5 pt-1">
                                 <label className="text-[10px] font-bold text-slate-700 block">
-                                  Assign Diaspora ID Number:
+                                  Write Diaspora ID Number to Assign:
                                 </label>
                                 <div className="flex flex-col sm:flex-row gap-2 items-center">
                                   <input 
                                     type="text" 
                                     id={`diaspora-id-${m.id}`}
-                                    defaultValue={m.diasporaId || `SSA-DIA-2026-${String(members.filter(x => x.diasporaId).length + 1).padStart(6, '0')}`}
-                                    placeholder="e.g. SSA-DIA-2026-000001" 
+                                    defaultValue=""
+                                    placeholder="Type Diaspora ID Number here..." 
                                     className="clay-input w-full text-xs font-bold uppercase tracking-wider text-emerald-800 bg-white"
                                   />
                                   <div className="flex gap-2 shrink-0 w-full sm:w-auto justify-end">
@@ -1692,7 +1720,7 @@ export default function Home() {
                                       }}
                                       className="clay-btn bg-emerald-600 clay-btn-green text-[10px] px-4 py-2 text-white font-bold"
                                     >
-                                      Verify & Assign ID
+                                      Approve & Save ID
                                     </button>
                                   </div>
                                 </div>
@@ -1716,20 +1744,40 @@ export default function Home() {
                         members
                           .filter(m => m.status === 'APPROVED')
                           .map((m) => (
-                            <div key={m.id} className="clay-card-inner p-3 flex justify-between items-center gap-3">
+                            <div key={m.id} className="clay-card-inner p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                               <div className="flex gap-3 items-center">
                                 <img src={m.photoUrl} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
                                 <div>
                                   <h4 className="font-bold text-slate-800 text-xs">{m.fullName}</h4>
-                                  <p className="text-[10px] text-slate-400">ID: {m.diasporaId} | {m.overseasAddress.country}</p>
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                                      {m.diasporaId || 'NO ID ASSIGNED'}
+                                    </span>
+                                    <button 
+                                      onClick={() => handleEditDiasporaId(m.id, m.diasporaId)}
+                                      className="text-[10px] text-slate-600 hover:text-emerald-700 font-bold underline flex items-center gap-0.5 ml-1"
+                                      title="Edit Diaspora ID Number"
+                                    >
+                                      <Edit size={10} /> Edit ID
+                                    </button>
+                                  </div>
+                                  <p className="text-[9px] text-slate-400 mt-0.5">{m.account.email} | {m.overseasAddress.country}</p>
                                 </div>
                               </div>
-                              <button 
-                                onClick={() => handleSuspendMember(m.id)}
-                                className="clay-btn clay-btn-red text-[9px] px-2.5 py-1"
-                              >
-                                Suspend Card
-                              </button>
+                              <div className="flex gap-2 shrink-0 self-end sm:self-center">
+                                <button 
+                                  onClick={() => handleEditDiasporaId(m.id, m.diasporaId)}
+                                  className="clay-btn text-[9px] px-2.5 py-1 text-slate-700 flex items-center gap-1"
+                                >
+                                  <Edit size={10} /> Edit ID
+                                </button>
+                                <button 
+                                  onClick={() => handleSuspendMember(m.id)}
+                                  className="clay-btn clay-btn-red text-[9px] px-2.5 py-1"
+                                >
+                                  Suspend Card
+                                </button>
+                              </div>
                             </div>
                           ))
                       )}

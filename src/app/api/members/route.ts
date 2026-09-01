@@ -35,23 +35,23 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Member not found.' }, { status: 404 });
     }
 
-    member.status = status;
+    if (status) {
+      member.status = status;
+    }
 
-    // Set Diaspora ID specified by the Admin
-    if (status === 'APPROVED') {
-      if (diasporaId && typeof diasporaId === 'string' && diasporaId.trim()) {
-        member.diasporaId = diasporaId.trim().toUpperCase();
-      } else if (!member.diasporaId) {
-        const seq = await db.getNextMemberSequence();
-        const formattedSeq = String(seq).padStart(6, '0');
-        member.diasporaId = `SSA-DIA-2026-${formattedSeq}`;
+    // Set or edit Diaspora ID written manually by Admin
+    if (diasporaId && typeof diasporaId === 'string' && diasporaId.trim()) {
+      member.diasporaId = diasporaId.trim().toUpperCase();
+      if (!member.issueDate) {
+        member.issueDate = new Date().toISOString().split('T')[0];
       }
-      member.issueDate = new Date().toISOString().split('T')[0];
+    } else if (status === 'APPROVED' && !member.diasporaId) {
+      return NextResponse.json({ error: 'Please enter a valid Diaspora ID Number to approve this member.' }, { status: 400 });
     }
 
     await db.updateMember(member);
 
-    // Trigger approval notification
+    // Trigger approval notification if approving
     if (status === 'APPROVED' && member.diasporaId) {
       try {
         const { notifications } = await import('@/lib/notifications');
