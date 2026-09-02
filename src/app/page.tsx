@@ -485,18 +485,49 @@ export default function Home() {
       const res = await fetch('/api/members');
       const data = await res.json();
       if (data.success && data.members) {
-        const found = data.members.find((m: any) => m.diasporaId?.toUpperCase() === cleanId);
+        const found = data.members.find((m: any) => 
+          m.diasporaId?.toUpperCase() === cleanId ||
+          (currentUser && m.account?.email?.toLowerCase() === (currentUser.account?.email || currentUser.email)?.toLowerCase())
+        );
+
         if (found) {
-          const registeredUser = { ...found, isRegistered: true };
-          setCurrentUser(registeredUser);
+          // If member is found, attach the submitted diasporaId if needed
+          let userObj = { ...found, isRegistered: true };
+          if (!userObj.diasporaId || userObj.diasporaId !== cleanId) {
+            userObj.diasporaId = cleanId;
+            await fetch('/api/members', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: found.id, diasporaId: cleanId, status: found.status || 'PENDING' })
+            });
+          }
+
+          setCurrentUser(userObj);
           setUserType('MEMBER');
-          localStorage.setItem('ssa_user', JSON.stringify(registeredUser));
+          localStorage.setItem('ssa_user', JSON.stringify(userObj));
           localStorage.setItem('ssa_usertype', 'MEMBER');
           setShowDiasporaIdModal(false);
           setInputDiasporaId('');
           setActiveTab('portal');
+          fetchData();
+        } else if (currentUser) {
+          // Link this Diaspora ID to the signed-in user
+          const updated = { ...currentUser, diasporaId: cleanId, status: 'PENDING', isRegistered: true };
+          await fetch('/api/members', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: currentUser.id, diasporaId: cleanId, status: 'PENDING' })
+          });
+          setCurrentUser(updated);
+          setUserType('MEMBER');
+          localStorage.setItem('ssa_user', JSON.stringify(updated));
+          localStorage.setItem('ssa_usertype', 'MEMBER');
+          setShowDiasporaIdModal(false);
+          setInputDiasporaId('');
+          setActiveTab('portal');
+          fetchData();
         } else {
-          setDiasporaIdError('No matching Diaspora ID found. Please check your ID number or complete the registration form below.');
+          setDiasporaIdError('No account found matching this Diaspora ID. Please sign in with your email first or complete the registration below.');
         }
       } else {
         setDiasporaIdError('Unable to connect to verification server.');
@@ -1282,8 +1313,75 @@ export default function Home() {
               </div>
             )}
 
-            {/* IF LOGGED IN AS FULLY REGISTERED DIASPORA MEMBER */}
-            {currentUser && userType === 'MEMBER' && currentUser.isRegistered && (
+            {/* IF LOGGED IN AND SUBMITTED ID / REGISTERED BUT STILL PENDING ADMIN VERIFICATION */}
+            {currentUser && userType === 'MEMBER' && currentUser.isRegistered && currentUser.status === 'PENDING' && (
+              <div className="clay-card p-8 md:p-12 text-center space-y-6 max-w-xl mx-auto no-print border border-amber-200 bg-amber-50/40">
+                <div className="w-20 h-20 rounded-3xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-inner animate-pulse">
+                  <Clock size={40} />
+                </div>
+                
+                <div className="space-y-3">
+                  <span className="inline-block bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    Awaiting Admin Verification
+                  </span>
+                  <h3 className="text-2xl font-black text-slate-800">Diaspora ID Under Verification</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    Your Diaspora ID {currentUser.diasporaId ? <strong className="text-emerald-800 bg-white px-2 py-0.5 rounded border border-amber-200 font-mono text-sm">{currentUser.diasporaId}</strong> : <strong>submission</strong>} is currently waiting for verification by the Presidential Diaspora Admin Office.
+                  </p>
+                  
+                  <div className="bg-white p-5 rounded-2xl border border-amber-200/60 text-xs text-slate-600 space-y-2.5 text-left shadow-sm">
+                    <p className="flex items-center gap-2 font-bold text-slate-800">
+                      <Mail size={16} className="text-emerald-600" /> You will be notified via email:
+                    </p>
+                    <p className="text-slate-500 pl-6 leading-relaxed">
+                      An official confirmation email will be sent to <strong>{currentUser.account?.email || currentUser.email}</strong> as soon as the Admin verifies and approves your Diaspora ID.
+                    </p>
+                    <p className="text-slate-500 pl-6 leading-relaxed">
+                      Once verified, your <strong>Official Virtual ID Card</strong>, <strong>Issue Reporting Desk</strong>, and <strong>Consular Support</strong> will automatically unlock here.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+                  <button 
+                    onClick={async () => {
+                      const res = await fetch('/api/members');
+                      const data = await res.json();
+                      if (data.success && data.members) {
+                        const fresh = data.members.find((m: any) => 
+                          m.id === currentUser.id || 
+                          m.account?.email?.toLowerCase() === (currentUser.account?.email || currentUser.email)?.toLowerCase() ||
+                          (currentUser.diasporaId && m.diasporaId?.toUpperCase() === currentUser.diasporaId?.toUpperCase())
+                        );
+                        if (fresh) {
+                          if (fresh.status === 'APPROVED') {
+                            alert('🎉 Your Diaspora ID has been verified! Welcome to your Member Portal.');
+                          } else {
+                            alert('Status is still Pending Verification by Admin. Please wait.');
+                          }
+                          const regUser = { ...fresh, isRegistered: true };
+                          setCurrentUser(regUser);
+                          localStorage.setItem('ssa_user', JSON.stringify(regUser));
+                        }
+                      }
+                      fetchData();
+                    }}
+                    className="clay-btn bg-emerald-600 clay-btn-green px-6 py-2.5 text-xs text-white flex items-center justify-center gap-2 font-bold"
+                  >
+                    <Clock size={14} /> Refresh Verification Status
+                  </button>
+                  <button 
+                    onClick={handleLogout}
+                    className="clay-btn bg-slate-200 text-slate-700 px-6 py-2.5 text-xs font-semibold"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* IF LOGGED IN AS FULLY APPROVED / VERIFIED DIASPORA MEMBER */}
+            {currentUser && userType === 'MEMBER' && currentUser.isRegistered && currentUser.status === 'APPROVED' && (
               <div className="space-y-10">
                 
                 {/* Profile Overview and Virtual Card */}
