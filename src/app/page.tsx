@@ -1313,8 +1313,8 @@ export default function Home() {
               </div>
             )}
 
-            {/* IF LOGGED IN AND SUBMITTED ID / REGISTERED BUT STILL PENDING ADMIN VERIFICATION */}
-            {currentUser && userType === 'MEMBER' && currentUser.isRegistered && currentUser.status === 'PENDING' && (
+            {/* IF LOGGED IN AND SUBMITTED ID / REGISTERED BUT STILL PENDING ADMIN VERIFICATION (or REJECTED or unknown status) */}
+            {currentUser && userType === 'MEMBER' && currentUser.isRegistered && !['APPROVED', 'SUSPENDED'].includes(currentUser.status) && (
               <div className="clay-card p-8 md:p-12 text-center space-y-6 max-w-xl mx-auto no-print border border-amber-200 bg-amber-50/40">
                 <div className="w-20 h-20 rounded-3xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-inner animate-pulse">
                   <Clock size={40} />
@@ -1377,6 +1377,30 @@ export default function Home() {
                     Sign Out
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* IF SUSPENDED */}
+            {currentUser && userType === 'MEMBER' && currentUser.isRegistered && currentUser.status === 'SUSPENDED' && (
+              <div className="clay-card p-8 text-center space-y-5 max-w-lg mx-auto border border-rose-200 bg-rose-50/40 no-print">
+                <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto shadow-inner">
+                  <AlertTriangle size={32} />
+                </div>
+                <div className="space-y-2">
+                  <span className="inline-block bg-rose-100 text-rose-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    Account Suspended
+                  </span>
+                  <h3 className="text-xl font-black text-slate-800">Your Account Has Been Suspended</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    Your Diaspora ID account has been temporarily suspended. Please contact the Presidential Diaspora Admin Office for assistance.
+                  </p>
+                </div>
+                <a href="mailto:support@ssa-diaspora.gov.ng" className="clay-btn bg-rose-600 px-6 py-2.5 text-sm text-white inline-flex items-center gap-2">
+                  <Mail size={14} /> Contact Support
+                </a>
+                <button onClick={handleLogout} className="clay-btn bg-slate-200 text-slate-700 px-6 py-2.5 text-xs font-semibold block mx-auto">
+                  Sign Out
+                </button>
               </div>
             )}
 
