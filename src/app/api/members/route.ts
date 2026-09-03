@@ -97,3 +97,18 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// DELETE /api/members (Remove a member from the system)
+export async function DELETE(request: Request) {
+  try {
+    const { id } = await request.json();
+    if (!id) {
+      return NextResponse.json({ error: 'Member ID or Email is required.' }, { status: 400 });
+    }
+    const success = await db.deleteMember(id);
+    return NextResponse.json({ success, message: 'Member deleted successfully.' });
+  } catch (error: any) {
+    console.error('Member Delete API Error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

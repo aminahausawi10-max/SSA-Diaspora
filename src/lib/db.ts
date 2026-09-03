@@ -280,6 +280,27 @@ export const db = {
     return member;
   },
 
+  async deleteMember(idOrEmail: string): Promise<boolean> {
+    const target = idOrEmail.toLowerCase().trim();
+    if (neonPool) {
+      try {
+        await ensureNeonInitialized();
+        await neonPool.query(
+          `DELETE FROM diaspora_members WHERE id = $1 OR email = $2`,
+          [idOrEmail, target]
+        );
+        return true;
+      } catch (e) {
+        console.error('Neon deleteMember error, using local file:', e);
+      }
+    }
+    const local = readLocalDb();
+    const before = local.members.length;
+    local.members = local.members.filter(m => m.id !== idOrEmail && m.account.email.toLowerCase().trim() !== target);
+    writeLocalDb(local);
+    return local.members.length < before;
+  },
+
   // Cases CRUD
   async getCases(): Promise<Case[]> {
     if (neonPool) {
