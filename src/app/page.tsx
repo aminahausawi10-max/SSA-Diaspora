@@ -8,6 +8,44 @@ import {
   Globe, Radio, Volume2, Video, Eye, EyeOff, Lock, Edit
 } from 'lucide-react';
 
+export const SUPPORTED_COUNTRIES = [
+  'Saudi Arabia',
+  'Qatar',
+  'Oman',
+  'Bahrain',
+  'Kuwait',
+  'Jordan',
+  'United Arab Emirates',
+  'Turkey',
+  'Germany',
+  'Spain',
+  'France',
+  'United States',
+  'Netherlands (Holland)',
+  'Pakistan',
+  'India',
+  'China',
+  'United Kingdom',
+  'South Africa',
+  'Uganda',
+  'Kenya',
+  'Central African Republic',
+  'Tanzania',
+  'Mali',
+  'Senegal',
+  'Libya',
+  'Algeria',
+  'Morocco',
+  'Tunisia',
+  'Ghana',
+  "Côte d'Ivoire",
+  'Togo',
+  'Benin',
+  'Benin (Cotonou)',
+  'Cameroon',
+  'Bangladesh'
+];
+
 export default function Home() {
   // Navigation State
   const [activeTab, setActiveTab] = useState<'home' | 'register' | 'portal' | 'admin' | 'verify'>('home');
@@ -775,18 +813,18 @@ export default function Home() {
                     </p>
                   </div>
                   <div className="flex gap-3 items-center">
-                    <Phone className="text-slate-400" size={18} />
-                    <p>+234 908 765 4321 (Hotline)</p>
+                    <Phone className="text-emerald-600 shrink-0" size={18} />
+                    <p className="font-bold text-slate-800">07047000070 <span className="text-xs font-normal text-slate-500">(+234 704 700 0070)</span></p>
                   </div>
                   <div className="flex gap-3 items-center">
-                    <Mail className="text-slate-400" size={18} />
+                    <Mail className="text-slate-400 shrink-0" size={18} />
                     <p>contact@ssa.gov.ng</p>
                   </div>
                   <hr className="border-slate-200/50" />
                   <div className="space-y-2">
                     <h4 className="font-bold text-slate-800 text-xs">Official Channels:</h4>
                     <p className="text-xs text-slate-500">
-                      * WhatsApp Coordination: +234 908 765 4322<br />
+                      * Direct Helpline & WhatsApp: <strong>07047000070</strong><br />
                       * Video Appointments: Book via Member Portal.
                     </p>
                   </div>
@@ -943,17 +981,12 @@ export default function Home() {
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">Country of Residence</label>
                       <select 
-                        className="clay-input" value={regData.overseasCountry}
+                        className="clay-input font-medium" value={regData.overseasCountry}
                         onChange={e => setRegData({...regData, overseasCountry: e.target.value})}
                       >
-                        <option>United Kingdom</option>
-                        <option>United States</option>
-                        <option>Saudi Arabia</option>
-                        <option>United Arab Emirates</option>
-                        <option>Canada</option>
-                        <option>Germany</option>
-                        <option>Turkey</option>
-                        <option>South Africa</option>
+                        {SUPPORTED_COUNTRIES.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="flex flex-col gap-1">
@@ -1639,10 +1672,15 @@ export default function Home() {
                         </div>
                         <div className="flex flex-col gap-1">
                           <label className="text-xs font-bold text-slate-600">Country of occurrence</label>
-                          <input 
-                            type="text" className="clay-input" placeholder="e.g. United Kingdom"
-                            value={caseCountry} onChange={e => setCaseCountry(e.target.value)}
-                          />
+                          <select 
+                            className="clay-input font-medium" 
+                            value={caseCountry} 
+                            onChange={e => setCaseCountry(e.target.value)}
+                          >
+                            {SUPPORTED_COUNTRIES.map((c) => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
 
@@ -1830,15 +1868,15 @@ export default function Home() {
                     <Globe size={18} className="text-emerald-600" />
                     <span className="text-sm font-bold text-slate-700">Country Desk Filter:</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {['All', 'United Kingdom', 'United States', 'Saudi Arabia', 'United Arab Emirates', 'Canada', 'Germany', 'Turkey'].map((desk) => (
+                  <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
+                    {['All', ...SUPPORTED_COUNTRIES].map((desk) => (
                       <button 
                         key={desk} 
                         onClick={() => setSelectedCountryDesk(desk)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                        className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all ${
                           selectedCountryDesk === desk 
                             ? 'bg-emerald-600 text-white shadow-inner' 
-                            : 'bg-white text-slate-600 border border-slate-100 hover:bg-slate-50'
+                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                         }`}
                       >
                         {desk} ({cases.filter(c => desk === 'All' ? true : c.country.toLowerCase() === desk.toLowerCase()).length})
