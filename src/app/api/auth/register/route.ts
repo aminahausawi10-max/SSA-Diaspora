@@ -100,8 +100,8 @@ export async function POST(request: Request) {
         },
       },
       status: existingUser?.status || 'PENDING',
-      diasporaId: existingUser?.diasporaId || null,
-      issueDate: existingUser?.issueDate || null,
+      diasporaId: existingUser?.diasporaId || `SSA-DIA-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`,
+      issueDate: existingUser?.issueDate || new Date().toISOString().split('T')[0],
       isRegistered: true,
       createdAt: existingUser?.createdAt || new Date().toISOString(),
     };

@@ -43,3 +43,5 @@ next-env.d.ts
 # local databases
 diaspora_data.json
 
+
+.vercel

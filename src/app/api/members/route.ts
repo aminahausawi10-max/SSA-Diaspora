@@ -22,10 +22,10 @@ export async function GET() {
 // PUT /api/members (Update verification status)
 export async function PUT(request: Request) {
   try {
-    const { id, status, diasporaId } = await request.json();
+    const { id, status, diasporaId, photoBase64 } = await request.json();
 
-    if (!id || !status) {
-      return NextResponse.json({ error: 'Member ID and status are required.' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'Member ID is required.' }, { status: 400 });
     }
 
     const members = await db.getMembers();
@@ -37,6 +37,17 @@ export async function PUT(request: Request) {
 
     if (status) {
       member.status = status;
+    }
+
+    if (photoBase64) {
+      try {
+        const { uploadToCloudinary } = await import('@/lib/cloudinary');
+        const photoUrl = await uploadToCloudinary(photoBase64, 'ssa_diaspora/photographs');
+        member.photoUrl = photoUrl;
+      } catch (err) {
+        console.error('Photo upload failed:', err);
+        return NextResponse.json({ error: 'Failed to upload photo.' }, { status: 500 });
+      }
     }
 
     // Set or edit Diaspora ID written manually by Admin

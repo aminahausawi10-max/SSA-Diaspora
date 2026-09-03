@@ -298,17 +298,13 @@ export default function Home() {
     }
   };
 
-  // Admin: Approve Member with Custom Diaspora ID written manually by Admin
+  // Admin: Approve Member automatically without manually typing ID
   const handleApproveMember = async (memberId: string, customDiasporaId?: string) => {
     let assignedId = customDiasporaId?.trim();
     if (!assignedId) {
-      const entered = prompt('Please enter the Diaspora ID Number to assign to this member (e.g. SSA-DIA-2026-000001):');
-      if (entered === null) return;
-      assignedId = entered.trim();
-    }
-    if (!assignedId) {
-      alert('You must write a Diaspora ID Number to approve this member.');
-      return;
+      // Automatically generate ID instead of prompting Admin
+      const randomNum = Math.floor(100000 + Math.random() * 900000);
+      assignedId = `SSA-DIA-${new Date().getFullYear()}-${randomNum}`;
     }
 
     try {
@@ -330,33 +326,7 @@ export default function Home() {
     }
   };
 
-  // Admin: Edit / Change Member Diaspora ID
-  const handleEditDiasporaId = async (memberId: string, currentId?: string | null) => {
-    const entered = prompt('Edit / Write the Diaspora ID Number for this member:', currentId || '');
-    if (entered === null) return;
-    if (!entered.trim()) {
-      alert('Diaspora ID Number cannot be empty.');
-      return;
-    }
 
-    try {
-      const res = await fetch('/api/members', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: memberId, diasporaId: entered.trim() })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(`Diaspora ID updated successfully to: ${entered.trim().toUpperCase()}`);
-        fetchData();
-      } else {
-        alert(data.error || 'Failed to update Diaspora ID.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error connecting to server.');
-    }
-  };
 
   // Admin: Reject Member
   const handleRejectMember = async (memberId: string) => {
@@ -546,6 +516,43 @@ export default function Home() {
   // Simulated Download of Card
   const handleDownloadCard = () => {
     alert('Simulating PDF/Image download of ID Card...');
+  };
+
+  const handleProfilePicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image must be less than 2MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string;
+      if (currentUser?.id) {
+        try {
+          const res = await fetch('/api/members', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: currentUser.id, photoBase64: base64 })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('Profile picture updated successfully!');
+            setCurrentUser(data.member);
+            localStorage.setItem('ssa_user', JSON.stringify(data.member));
+            fetchData();
+          } else {
+            alert(data.error || 'Failed to update profile picture.');
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Error uploading picture.');
+        }
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   // Filter cases for country desks
@@ -1491,13 +1498,29 @@ export default function Home() {
                     </div>
 
                     {/* Card Actions */}
-                    <div className="flex justify-center gap-3 no-print">
-                      <button onClick={handlePrintCard} className="clay-btn bg-emerald-600 clay-btn-green px-4 py-2 text-xs flex items-center gap-1">
-                        <Printer size={14} /> Print ID
-                      </button>
-                      <button onClick={handleDownloadCard} className="clay-btn bg-emerald-600 clay-btn-green px-4 py-2 text-xs flex items-center gap-1">
-                        <Download size={14} /> Download ID
-                      </button>
+                    <div className="flex flex-col items-center gap-3 no-print">
+                      <div className="flex justify-center gap-3">
+                        <button onClick={handlePrintCard} className="clay-btn bg-emerald-600 clay-btn-green px-4 py-2 text-xs flex items-center gap-1">
+                          <Printer size={14} /> Print ID
+                        </button>
+                        <button onClick={handleDownloadCard} className="clay-btn bg-emerald-600 clay-btn-green px-4 py-2 text-xs flex items-center gap-1">
+                          <Download size={14} /> Download ID
+                        </button>
+                      </div>
+                      
+                      {/* Upload Photo Button */}
+                      <div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          id="profilePicUpload" 
+                          className="hidden" 
+                          onChange={handleProfilePicUpload} 
+                        />
+                        <label htmlFor="profilePicUpload" className="clay-btn bg-slate-100 text-slate-700 px-4 py-2 text-xs flex items-center gap-1 cursor-pointer">
+                          Upload New Picture
+                        </label>
+                      </div>
                     </div>
                   </div>
 
@@ -1875,24 +1898,11 @@ export default function Home() {
                                     <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
                                       {m.diasporaId || 'NO ID ASSIGNED'}
                                     </span>
-                                    <button 
-                                      onClick={() => handleEditDiasporaId(m.id, m.diasporaId)}
-                                      className="text-[10px] text-slate-600 hover:text-emerald-700 font-bold underline flex items-center gap-0.5 ml-1"
-                                      title="Edit Diaspora ID Number"
-                                    >
-                                      <Edit size={10} /> Edit ID
-                                    </button>
                                   </div>
                                   <p className="text-[9px] text-slate-400 mt-0.5">{m.account.email} | {m.overseasAddress.country}</p>
                                 </div>
                               </div>
                               <div className="flex gap-2 shrink-0 self-end sm:self-center">
-                                <button 
-                                  onClick={() => handleEditDiasporaId(m.id, m.diasporaId)}
-                                  className="clay-btn text-[9px] px-2.5 py-1 text-slate-700 flex items-center gap-1"
-                                >
-                                  <Edit size={10} /> Edit ID
-                                </button>
                                 <button 
                                   onClick={() => handleSuspendMember(m.id)}
                                   className="clay-btn clay-btn-red text-[9px] px-2.5 py-1"
