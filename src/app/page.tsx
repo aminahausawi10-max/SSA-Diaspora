@@ -300,22 +300,19 @@ export default function Home() {
 
   // Admin: Approve Member automatically without manually typing ID
   const handleApproveMember = async (memberId: string, customDiasporaId?: string) => {
-    let assignedId = customDiasporaId?.trim();
-    if (!assignedId) {
-      // Automatically generate ID instead of prompting Admin
-      const randomNum = Math.floor(100000 + Math.random() * 900000);
-      assignedId = `SSA-DIA-${new Date().getFullYear()}-${randomNum}`;
-    }
-
     try {
       const res = await fetch('/api/members', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: memberId, status: 'APPROVED', diasporaId: assignedId })
+        body: JSON.stringify({ 
+          id: memberId, 
+          status: 'APPROVED', 
+          ...(customDiasporaId?.trim() ? { diasporaId: customDiasporaId.trim() } : {}) 
+        })
       });
       const data = await res.json();
       if (data.success) {
-        alert(`Member Approved! Assigned Diaspora ID: ${assignedId.toUpperCase()}`);
+        alert(`Member Approved! Diaspora ID: ${(data.member?.diasporaId || customDiasporaId || '').toUpperCase()}`);
         fetchData();
       } else {
         alert(data.error || 'Failed to approve member.');

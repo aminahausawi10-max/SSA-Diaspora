@@ -50,14 +50,20 @@ export async function PUT(request: Request) {
       }
     }
 
-    // Set or edit Diaspora ID written manually by Admin
+    // Auto-assign or set Diaspora ID
     if (diasporaId && typeof diasporaId === 'string' && diasporaId.trim()) {
       member.diasporaId = diasporaId.trim().toUpperCase();
       if (!member.issueDate) {
         member.issueDate = new Date().toISOString().split('T')[0];
       }
     } else if (status === 'APPROVED' && !member.diasporaId) {
-      return NextResponse.json({ error: 'Please enter a valid Diaspora ID Number to approve this member.' }, { status: 400 });
+      const nextSeq = await db.getNextMemberSequence();
+      const formattedSeq = String(nextSeq).padStart(6, '0');
+      const year = new Date().getFullYear();
+      member.diasporaId = `SSA-DIA-${year}-${formattedSeq}`;
+      if (!member.issueDate) {
+        member.issueDate = new Date().toISOString().split('T')[0];
+      }
     }
 
     await db.updateMember(member);

@@ -51,6 +51,14 @@ export async function POST(request: Request) {
     // Hash Password
     const passwordHash = password ? crypto.createHash('sha256').update(password).digest('hex') : (existingUser?.account?.passwordHash || '');
 
+    let diasporaId = existingUser?.diasporaId;
+    if (!diasporaId) {
+      const nextSeq = await db.getNextMemberSequence();
+      const formattedSeq = String(nextSeq).padStart(6, '0');
+      const year = new Date().getFullYear();
+      diasporaId = `SSA-DIA-${year}-${formattedSeq}`;
+    }
+
     // Construct Member object
     const memberData: Member = {
       id: existingUser?.id || crypto.randomUUID(),
@@ -100,7 +108,7 @@ export async function POST(request: Request) {
         },
       },
       status: existingUser?.status || 'PENDING',
-      diasporaId: existingUser?.diasporaId || `SSA-DIA-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`,
+      diasporaId,
       issueDate: existingUser?.issueDate || new Date().toISOString().split('T')[0],
       isRegistered: true,
       createdAt: existingUser?.createdAt || new Date().toISOString(),
