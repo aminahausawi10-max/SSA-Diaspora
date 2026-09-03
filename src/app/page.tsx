@@ -109,17 +109,21 @@ export default function Home() {
   const [inputDiasporaId, setInputDiasporaId] = useState('');
   const [diasporaIdError, setDiasporaIdError] = useState('');
 
-  // Admin Quick Add Member State
-  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
-  const [adminNewMember, setAdminNewMember] = useState({
-    fullName: '',
-    email: '',
-    country: 'Saudi Arabia',
-    stateOfOrigin: '',
-    passportNumber: '',
-    ninNumber: '',
-    phone: '',
-    password: ''
+  // Admin Manual Adjustments State
+  const [manualAdjustment, setManualAdjustment] = useState({
+    category: 'Total Members',
+    amount: '1',
+    reason: ''
+  });
+  const [customOffsets, setCustomOffsets] = useState<{ [key: string]: number }>({
+    'Total Members': 0,
+    'Verified Members': 0,
+    'Active Cases': 0,
+    'Resolved Cases': 0,
+    'Total Submissions': 0,
+    'New (Received)': 0,
+    'Processing Cases': 0,
+    'Completed': 0
   });
 
   // Load and refresh initial data
@@ -151,23 +155,42 @@ export default function Home() {
     const mems = memberList || [];
     const css = caseList || [];
     
+    const baseTotalMembers = mems.length;
+    const baseVerified = mems.filter(m => m.status === 'APPROVED').length;
+    const baseCases = css.filter(c => c.status !== 'RESOLVED').length;
+    const baseResolved = css.filter(c => c.status === 'RESOLVED').length;
+
+    const totalMembersOffset = customOffsets['Total Members'] || customOffsets['Total Submissions'] || 0;
+    const verifiedOffset = customOffsets['Verified Members'] || customOffsets['Completed'] || 0;
+    const activeCasesOffset = customOffsets['Active Cases'] || customOffsets['Processing Cases'] || 0;
+    const newReceivedOffset = customOffsets['New (Received)'] || 0;
+
     const statsObj = {
-      totalMembers: mems.length,
-      pendingMembers: mems.filter(m => m.status === 'PENDING').length,
-      verifiedMembers: mems.filter(m => m.status === 'APPROVED').length,
+      totalMembers: Math.max(0, baseTotalMembers + totalMembersOffset),
+      pendingMembers: mems.filter(m => m.status === 'PENDING').length + (newReceivedOffset),
+      verifiedMembers: Math.max(0, baseVerified + verifiedOffset),
       suspendedMembers: mems.filter(m => m.status === 'SUSPENDED').length,
-      newCases: css.filter(c => c.status === 'SUBMITTED').length,
+      newCases: css.filter(c => c.status === 'SUBMITTED').length + (newReceivedOffset),
       urgentCases: css.filter(c => c.isUrgent).length,
       underReview: css.filter(c => c.status === 'UNDER REVIEW').length,
       referred: css.filter(c => c.status === 'REFERRED').length,
       pendingResponse: css.filter(c => c.status === 'AGENCY RESPONSE').length,
-      resolved: css.filter(c => c.status === 'RESOLVED').length
+      resolved: Math.max(0, baseResolved + (customOffsets['Resolved Cases'] || 0))
     };
     setStats(statsObj);
   };
 
   useEffect(() => {
     fetchData();
+    // Retrieve custom offsets from localstorage if exists
+    const storedOffsets = localStorage.getItem('ssa_custom_offsets');
+    if (storedOffsets) {
+      try {
+        setCustomOffsets(JSON.parse(storedOffsets));
+      } catch (e) {
+        console.error(e);
+      }
+    }
     // Retrieve login session from localstorage if exists
     const storedUser = localStorage.getItem('ssa_user');
     const storedType = localStorage.getItem('ssa_usertype');
@@ -190,7 +213,7 @@ export default function Home() {
 
   useEffect(() => {
     calculateStats(members, cases);
-  }, [members, cases]);
+  }, [members, cases, customOffsets]);
 
   // Handle file base64 conversions
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'photo' | 'doc' | 'case') => {
@@ -456,46 +479,26 @@ export default function Home() {
     }
   };
 
-  // Admin: Quick Add Member
-  const handleAdminAddMember = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: adminNewMember.fullName,
-          email: adminNewMember.email,
-          password: adminNewMember.password || 'TemporaryPass123!',
-          overseasCountry: adminNewMember.country || 'Saudi Arabia',
-          stateOfOrigin: adminNewMember.stateOfOrigin || 'FCT',
-          passportNumber: adminNewMember.passportNumber || '',
-          ninNumber: adminNewMember.ninNumber || '',
-          overseasPhone: adminNewMember.phone || '07047000070'
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(`Member "${adminNewMember.fullName}" successfully added to the system!`);
-        setShowAddMemberModal(false);
-        setAdminNewMember({
-          fullName: '',
-          email: '',
-          country: 'Saudi Arabia',
-          stateOfOrigin: '',
-          passportNumber: '',
-          ninNumber: '',
-          phone: '',
-          password: ''
-        });
-        fetchData();
-      } else {
-        alert(data.error || 'Failed to add member.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error creating member.');
+  // Admin: Manual Count Adjustment (Add / Remove)
+  const handleApplyAdjustment = (action: 'ADD' | 'REMOVE') => {
+    const qty = parseInt(manualAdjustment.amount, 10);
+    if (isNaN(qty) || qty <= 0) {
+      alert('Please enter a valid amount greater than 0.');
+      return;
     }
+
+    const cat = manualAdjustment.category;
+    const currentOffset = customOffsets[cat] || 0;
+    const newOffset = action === 'ADD' ? currentOffset + qty : currentOffset - qty;
+
+    const updatedOffsets = {
+      ...customOffsets,
+      [cat]: newOffset
+    };
+
+    setCustomOffsets(updatedOffsets);
+    localStorage.setItem('ssa_custom_offsets', JSON.stringify(updatedOffsets));
+    alert(`${action === 'ADD' ? 'Added' : 'Removed'} ${qty} from "${cat}". Total updated successfully.`);
   };
 
   // Admin: Refer Case to Agency
@@ -1913,19 +1916,10 @@ export default function Home() {
             ) : (
               <div className="space-y-8">
                 
-                {/* Stats row with Member Management Controls */}
+                {/* Stats row with Real-Time Data */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="clay-card p-4 space-y-2 relative overflow-hidden">
-                    <div className="flex justify-between items-start">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Total Members</span>
-                      <button 
-                        onClick={() => setShowAddMemberModal(true)}
-                        className="clay-btn bg-emerald-600 clay-btn-green text-[9px] px-2 py-1 text-white font-bold flex items-center gap-1 shadow-sm"
-                        title="Add New Member"
-                      >
-                        <UserPlus size={12} /> Add Member
-                      </button>
-                    </div>
+                  <div className="clay-card p-4 space-y-1 relative overflow-hidden">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Total Members</span>
                     <p className="text-2xl font-black text-slate-800">{stats.totalMembers}</p>
                     <span className="text-[10px] text-amber-600 font-bold block">{stats.pendingMembers} pending verification</span>
                   </div>
@@ -1948,6 +1942,75 @@ export default function Home() {
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Resolved Cases</span>
                     <p className="text-2xl font-black text-emerald-600">{stats.resolved}</p>
                     <span className="text-[10px] text-slate-500 font-semibold">Coordination closed</span>
+                  </div>
+                </div>
+
+                {/* Manual Adjustment Card matching screenshot */}
+                <div className="clay-card p-6 max-w-xl mx-auto space-y-4 border border-rose-200/80 bg-gradient-to-b from-white to-rose-50/20 shadow-lg">
+                  <div className="flex items-center gap-2 text-rose-600 font-bold border-b pb-2">
+                    <Radio size={20} className="animate-pulse text-rose-500" />
+                    <h3 className="text-base font-black text-slate-800 tracking-tight">Manual Case & Member Adjustment</h3>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Quickly add or remove counts from tracking categories for manual reconciliation.
+                  </p>
+
+                  <div className="space-y-3 text-xs">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-bold text-slate-700">Case / Member Category</label>
+                      <select 
+                        className="clay-input font-bold text-slate-800 bg-white"
+                        value={manualAdjustment.category}
+                        onChange={e => setManualAdjustment({...manualAdjustment, category: e.target.value})}
+                      >
+                        <option value="Total Members">Total Members / Total Submissions</option>
+                        <option value="Verified Members">Verified Members / Completed</option>
+                        <option value="Active Cases">Active Cases / Processing Cases</option>
+                        <option value="New (Received)">New (Received)</option>
+                        <option value="Resolved Cases">Resolved Cases</option>
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-bold text-slate-700">Amount</label>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        className="clay-input font-bold text-slate-800 bg-white"
+                        placeholder="1"
+                        value={manualAdjustment.amount}
+                        onChange={e => setManualAdjustment({...manualAdjustment, amount: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="font-bold text-slate-700">Reason (optional)</label>
+                      <input 
+                        type="text" 
+                        className="clay-input text-slate-700 bg-white"
+                        placeholder="e.g. Batch import, manual reconciliation"
+                        value={manualAdjustment.reason}
+                        onChange={e => setManualAdjustment({...manualAdjustment, reason: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button 
+                        type="button"
+                        onClick={() => handleApplyAdjustment('ADD')}
+                        className="clay-btn bg-rose-600 text-white font-black text-xs px-6 py-2.5 flex-1 flex items-center justify-center gap-1.5 hover:bg-rose-700 transition-colors shadow-md"
+                      >
+                        <Plus size={15} /> Add
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => handleApplyAdjustment('REMOVE')}
+                        className="clay-btn bg-slate-800 text-white font-black text-xs px-6 py-2.5 flex-1 flex items-center justify-center gap-1.5 hover:bg-slate-900 transition-colors shadow-md"
+                      >
+                        <UserMinus size={15} /> Remove
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1979,17 +2042,9 @@ export default function Home() {
                   
                   {/* Pending Registrations list */}
                   <div className="clay-card p-6 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <Clock className="text-amber-500" size={18} /> Pending Member Approvals ({members.filter(m => m.status === 'PENDING').length})
-                      </h3>
-                      <button 
-                        onClick={() => setShowAddMemberModal(true)}
-                        className="text-xs text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1"
-                      >
-                        <UserPlus size={14} /> Add
-                      </button>
-                    </div>
+                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                      <Clock className="text-amber-500" size={18} /> Pending Member Approvals ({members.filter(m => m.status === 'PENDING').length})
+                    </h3>
 
                     <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
                       {members.filter(m => m.status === 'PENDING').length === 0 ? (
@@ -2060,17 +2115,9 @@ export default function Home() {
 
                   {/* Active Verified Members list */}
                   <div className="clay-card p-6 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <CheckCircle className="text-emerald-500" size={18} /> Verified Members ({members.filter(m => m.status === 'APPROVED').length})
-                      </h3>
-                      <button 
-                        onClick={() => setShowAddMemberModal(true)}
-                        className="text-xs text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1"
-                      >
-                        <UserPlus size={14} /> Add
-                      </button>
-                    </div>
+                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                      <CheckCircle className="text-emerald-500" size={18} /> Verified Members ({members.filter(m => m.status === 'APPROVED').length})
+                    </h3>
 
                     <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                       {members.filter(m => m.status === 'APPROVED').length === 0 ? (
@@ -2162,123 +2209,7 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* MODAL: ADMIN QUICK ADD MEMBER */}
-                {showAddMemberModal && (
-                  <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="clay-card bg-white p-6 max-w-lg w-full space-y-4 shadow-2xl border border-emerald-200 animate-in fade-in zoom-in-95">
-                      <div className="flex justify-between items-center border-b pb-3">
-                        <div className="flex items-center gap-2 text-emerald-700">
-                          <UserPlus size={20} />
-                          <h3 className="font-bold text-lg text-slate-800">Add Diaspora Member</h3>
-                        </div>
-                        <button 
-                          onClick={() => setShowAddMemberModal(false)}
-                          className="text-slate-400 hover:text-slate-600 text-sm font-bold px-2 py-1"
-                        >
-                          ✕
-                        </button>
-                      </div>
 
-                      <form onSubmit={handleAdminAddMember} className="space-y-4 text-xs">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="flex flex-col gap-1">
-                            <label className="font-bold text-slate-700">Full Name *</label>
-                            <input 
-                              type="text" required className="clay-input" placeholder="e.g. Ibrahim Musa"
-                              value={adminNewMember.fullName}
-                              onChange={e => setAdminNewMember({...adminNewMember, fullName: e.target.value})}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="font-bold text-slate-700">Email Address *</label>
-                            <input 
-                              type="email" required className="clay-input" placeholder="member@example.com"
-                              value={adminNewMember.email}
-                              onChange={e => setAdminNewMember({...adminNewMember, email: e.target.value})}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="flex flex-col gap-1">
-                            <label className="font-bold text-slate-700">Country of Residence *</label>
-                            <select 
-                              className="clay-input font-medium"
-                              value={adminNewMember.country}
-                              onChange={e => setAdminNewMember({...adminNewMember, country: e.target.value})}
-                            >
-                              {SUPPORTED_COUNTRIES.map(c => (
-                                <option key={c} value={c}>{c}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="font-bold text-slate-700">State of Origin (Nigeria)</label>
-                            <input 
-                              type="text" className="clay-input" placeholder="e.g. Kano"
-                              value={adminNewMember.stateOfOrigin}
-                              onChange={e => setAdminNewMember({...adminNewMember, stateOfOrigin: e.target.value})}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="flex flex-col gap-1">
-                            <label className="font-bold text-slate-700">Passport Number (Optional)</label>
-                            <input 
-                              type="text" className="clay-input uppercase" placeholder="e.g. A12345678"
-                              value={adminNewMember.passportNumber}
-                              onChange={e => setAdminNewMember({...adminNewMember, passportNumber: e.target.value})}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="font-bold text-slate-700">NIN Number (Optional)</label>
-                            <input 
-                              type="text" className="clay-input" placeholder="11-digit NIN"
-                              value={adminNewMember.ninNumber}
-                              onChange={e => setAdminNewMember({...adminNewMember, ninNumber: e.target.value})}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="flex flex-col gap-1">
-                            <label className="font-bold text-slate-700">Phone Contact</label>
-                            <input 
-                              type="tel" className="clay-input" placeholder="e.g. 07047000070"
-                              value={adminNewMember.phone}
-                              onChange={e => setAdminNewMember({...adminNewMember, phone: e.target.value})}
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="font-bold text-slate-700">Account Password (Optional)</label>
-                            <input 
-                              type="password" className="clay-input" placeholder="Default: TemporaryPass123!"
-                              value={adminNewMember.password}
-                              onChange={e => setAdminNewMember({...adminNewMember, password: e.target.value})}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-3 border-t">
-                          <button 
-                            type="button" 
-                            onClick={() => setShowAddMemberModal(false)}
-                            className="clay-btn bg-slate-100 text-slate-600 px-4 py-2"
-                          >
-                            Cancel
-                          </button>
-                          <button 
-                            type="submit" 
-                            className="clay-btn bg-emerald-600 clay-btn-green text-white font-bold px-5 py-2 flex items-center gap-1.5"
-                          >
-                            <UserPlus size={14} /> Add Member to System
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
 
                 {/* Cases Referral Section */}
                 <div className="grid lg:grid-cols-3 gap-8">
