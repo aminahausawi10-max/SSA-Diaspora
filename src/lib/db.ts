@@ -400,7 +400,10 @@ export const db = {
       if (m.diasporaId) {
         const parts = m.diasporaId.split('-');
         const num = parseInt(parts[parts.length - 1], 10);
-        if (!isNaN(num) && num > max) max = num;
+        // Only consider true sequence numbers (ignore legacy 6-digit random IDs like 804412)
+        if (!isNaN(num) && num < 100000 && num > max) {
+          max = num;
+        }
       }
     });
     return max + 1;

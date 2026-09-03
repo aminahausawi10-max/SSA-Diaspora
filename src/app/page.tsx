@@ -1418,12 +1418,44 @@ export default function Home() {
                     Your Diaspora ID account has been temporarily suspended. Please contact the Presidential Diaspora Admin Office for assistance.
                   </p>
                 </div>
-                <a href="mailto:support@ssa-diaspora.gov.ng" className="clay-btn bg-rose-600 px-6 py-2.5 text-sm text-white inline-flex items-center gap-2">
-                  <Mail size={14} /> Contact Support
-                </a>
-                <button onClick={handleLogout} className="clay-btn bg-slate-200 text-slate-700 px-6 py-2.5 text-xs font-semibold block mx-auto">
-                  Sign Out
-                </button>
+                <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/members');
+                        const data = await res.json();
+                        if (data.success && data.members) {
+                          const fresh = data.members.find((m: any) => 
+                            m.id === currentUser.id || 
+                            m.account?.email?.toLowerCase() === (currentUser.account?.email || currentUser.email)?.toLowerCase()
+                          );
+                          if (fresh) {
+                            if (fresh.status === 'APPROVED') {
+                              alert('🎉 Your card has been unsuspended! Welcome back to your Member Portal.');
+                            } else {
+                              alert(`Your card status is currently: ${fresh.status}. Contact Admin if you believe this is an error.`);
+                            }
+                            const regUser = { ...fresh, isRegistered: true };
+                            setCurrentUser(regUser);
+                            localStorage.setItem('ssa_user', JSON.stringify(regUser));
+                          }
+                        }
+                        fetchData();
+                      } catch (e) {
+                        console.error(e);
+                      }
+                    }}
+                    className="clay-btn bg-emerald-600 clay-btn-green px-5 py-2.5 text-xs text-white flex items-center justify-center gap-2 font-bold"
+                  >
+                    <Clock size={14} /> Refresh Card Status
+                  </button>
+                  <a href="mailto:support@ssa-diaspora.gov.ng" className="clay-btn bg-rose-600 px-5 py-2.5 text-xs text-white inline-flex items-center justify-center gap-2">
+                    <Mail size={14} /> Contact Support
+                  </a>
+                  <button onClick={handleLogout} className="clay-btn bg-slate-200 text-slate-700 px-5 py-2.5 text-xs font-semibold">
+                    Sign Out
+                  </button>
+                </div>
               </div>
             )}
 
