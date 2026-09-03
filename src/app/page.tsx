@@ -364,6 +364,25 @@ export default function Home() {
     }
   };
 
+  // Admin: Unsuspend / Restore Member
+  const handleUnsuspendMember = async (memberId: string) => {
+    if (!confirm('Are you sure you want to unsuspend this member and reactivate their Diaspora ID?')) return;
+    try {
+      const res = await fetch('/api/members', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: memberId, status: 'APPROVED' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Member has been successfully unsuspended and reactivated.');
+        fetchData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Admin: Refer Case to Agency
   const handleReferCase = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1835,36 +1854,26 @@ export default function Home() {
                                 </a>
                               )}
 
-                              <div className="space-y-1.5 pt-1">
-                                <label className="text-[10px] font-bold text-slate-700 block">
-                                  Write Diaspora ID Number to Assign:
-                                </label>
-                                <div className="flex flex-col sm:flex-row gap-2 items-center">
-                                  <input 
-                                    type="text" 
-                                    id={`diaspora-id-${m.id}`}
-                                    defaultValue=""
-                                    placeholder="Type Diaspora ID Number here..." 
-                                    className="clay-input w-full text-xs font-bold uppercase tracking-wider text-emerald-800 bg-white"
-                                  />
-                                  <div className="flex gap-2 shrink-0 w-full sm:w-auto justify-end">
-                                    <button 
-                                      onClick={() => handleRejectMember(m.id)}
-                                      className="clay-btn clay-btn-red text-[10px] px-3 py-2"
-                                    >
-                                      Reject
-                                    </button>
-                                    <button 
-                                      onClick={() => {
-                                        const inputEl = document.getElementById(`diaspora-id-${m.id}`) as HTMLInputElement;
-                                        const customId = inputEl?.value || '';
-                                        handleApproveMember(m.id, customId);
-                                      }}
-                                      className="clay-btn bg-emerald-600 clay-btn-green text-[10px] px-4 py-2 text-white font-bold"
-                                    >
-                                      Approve & Save ID
-                                    </button>
-                                  </div>
+                              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-2 border-t border-slate-100">
+                                <div>
+                                  <span className="text-[10px] text-slate-500 font-semibold">Assigned ID: </span>
+                                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-mono">
+                                    {m.diasporaId || 'Auto-generated on approval'}
+                                  </span>
+                                </div>
+                                <div className="flex gap-2 shrink-0 w-full sm:w-auto justify-end">
+                                  <button 
+                                    onClick={() => handleRejectMember(m.id)}
+                                    className="clay-btn clay-btn-red text-[10px] px-3 py-1.5"
+                                  >
+                                    Reject
+                                  </button>
+                                  <button 
+                                    onClick={() => handleApproveMember(m.id, m.diasporaId || undefined)}
+                                    className="clay-btn bg-emerald-600 clay-btn-green text-[10px] px-4 py-1.5 text-white font-bold"
+                                  >
+                                    Approve Member
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -1892,7 +1901,7 @@ export default function Home() {
                                 <div>
                                   <h4 className="font-bold text-slate-800 text-xs">{m.fullName}</h4>
                                   <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded font-mono">
                                       {m.diasporaId || 'NO ID ASSIGNED'}
                                     </span>
                                   </div>
@@ -1913,6 +1922,45 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+
+                {/* Suspended Members list */}
+                {members.some(m => m.status === 'SUSPENDED') && (
+                  <div className="clay-card p-6 space-y-4 border border-rose-200/70 bg-rose-50/20">
+                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                      <AlertTriangle className="text-rose-500" size={18} /> Suspended Cards ({members.filter(m => m.status === 'SUSPENDED').length})
+                    </h3>
+
+                    <div className="grid md:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-1">
+                      {members
+                        .filter(m => m.status === 'SUSPENDED')
+                        .map((m) => (
+                          <div key={m.id} className="clay-card-inner p-3 flex justify-between items-center gap-3 border-rose-200">
+                            <div className="flex gap-3 items-center">
+                              <img src={m.photoUrl} className="w-10 h-10 rounded-lg object-cover bg-slate-100" />
+                              <div>
+                                <h4 className="font-bold text-slate-800 text-xs">{m.fullName}</h4>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="text-[10px] font-bold text-rose-800 bg-rose-100 px-2 py-0.5 rounded font-mono">
+                                    {m.diasporaId || 'NO ID'}
+                                  </span>
+                                  <span className="text-[9px] font-bold uppercase text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">
+                                    SUSPENDED
+                                  </span>
+                                </div>
+                                <p className="text-[9px] text-slate-400 mt-0.5">{m.account.email} | {m.overseasAddress.country}</p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => handleUnsuspendMember(m.id)}
+                              className="clay-btn bg-emerald-600 clay-btn-green text-[10px] px-3 py-1.5 text-white font-bold shrink-0"
+                            >
+                              Unsuspend Card
+                            </button>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Cases Referral Section */}
                 <div className="grid lg:grid-cols-3 gap-8">
