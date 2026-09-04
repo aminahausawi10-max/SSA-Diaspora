@@ -107,7 +107,7 @@ export async function POST(request: Request) {
           phone: emergencyOsPhone || '',
         },
       },
-      status: existingUser?.status || 'PENDING',
+      status: 'PENDING',
       diasporaId,
       issueDate: existingUser?.issueDate || new Date().toISOString().split('T')[0],
       isRegistered: true,
