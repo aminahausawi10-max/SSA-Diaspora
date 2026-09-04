@@ -16,8 +16,8 @@ export async function POST(request: Request) {
     } = body;
 
     // Basic validation
-    if (!fullName || !email || !password) {
-      return NextResponse.json({ error: 'Required fields are missing.' }, { status: 400 });
+    if (!fullName || !email) {
+      return NextResponse.json({ error: 'Full name and email are required.' }, { status: 400 });
     }
 
     // Check if user already exists

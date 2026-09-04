@@ -9,41 +9,46 @@ import {
 } from 'lucide-react';
 
 export const SUPPORTED_COUNTRIES = [
-  'Saudi Arabia',
-  'Qatar',
-  'Oman',
   'Bahrain',
-  'Kuwait',
+  'Egypt',
   'Jordan',
-  'United Arab Emirates',
-  'Turkey',
-  'Germany',
-  'Spain',
-  'France',
-  'United States',
-  'Netherlands (Holland)',
-  'Pakistan',
-  'India',
-  'China',
-  'United Kingdom',
-  'South Africa',
-  'Uganda',
-  'Kenya',
-  'Central African Republic',
-  'Tanzania',
-  'Mali',
-  'Senegal',
-  'Libya',
-  'Algeria',
-  'Morocco',
-  'Tunisia',
-  'Ghana',
-  "Côte d'Ivoire",
-  'Togo',
-  'Benin',
-  'Benin (Cotonou)',
+  'Kuwait',
+  'Oman',
+  'Qatar',
+  'Saudi Arabia',
+  'Sudan',
+  'United Arab Emirates (UAE)',
+  'Angola',
+  'Benin Republic',
   'Cameroon',
-  'Bangladesh'
+  'Central African Republic',
+  "Côte d'Ivoire",
+  'Ethiopia',
+  'Gambia',
+  'Ghana',
+  'Kenya',
+  'Mali',
+  'Niger Republic',
+  'Senegal',
+  'South Africa',
+  'Tanzania',
+  'Togo',
+  'Uganda',
+  'Bangladesh',
+  'Canada',
+  'China',
+  'Cyprus',
+  'France',
+  'Germany',
+  'India',
+  'Italy',
+  'Malaysia',
+  'Pakistan',
+  'Singapore',
+  'Spain',
+  'Thailand',
+  'United Kingdom (UK)',
+  'United States of America (USA)'
 ];
 
 export default function Home() {
@@ -214,6 +219,37 @@ export default function Home() {
   useEffect(() => {
     calculateStats(members, cases);
   }, [members, cases, customOffsets]);
+
+  // Real-time Auto-refresh for Member Approval & Virtual Card generation
+  useEffect(() => {
+    if (!currentUser || userType !== 'MEMBER' || !currentUser.isRegistered || currentUser.status === 'APPROVED') {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/members');
+        const data = await res.json();
+        if (data.success && data.members) {
+          const fresh = data.members.find((m: any) => 
+            m.id === currentUser.id || 
+            m.account?.email?.toLowerCase() === (currentUser.account?.email || currentUser.email)?.toLowerCase() ||
+            (currentUser.diasporaId && m.diasporaId?.toUpperCase() === currentUser.diasporaId?.toUpperCase())
+          );
+          if (fresh && fresh.status === 'APPROVED') {
+            const approvedUser = { ...fresh, isRegistered: true };
+            setCurrentUser(approvedUser);
+            localStorage.setItem('ssa_user', JSON.stringify(approvedUser));
+            fetchData();
+          }
+        }
+      } catch (err) {
+        console.error('Auto status check error:', err);
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [currentUser, userType]);
 
   // Handle file base64 conversions
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'photo' | 'doc' | 'case') => {
@@ -1147,28 +1183,23 @@ export default function Home() {
               {/* STEP 5: Account & Verification */}
               {regStep === 5 && (
                 <div className="space-y-4">
-                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 5 — Account Creation</h3>
+                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 5 — Official Email & Contact</h3>
                   
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-600">Email Address</label>
+                    <label className="text-xs font-bold text-slate-600">Official Email Address *</label>
                     <input 
                       type="email" required className="clay-input" placeholder="you@example.com"
                       value={regData.email} onChange={e => setRegData({...regData, email: e.target.value})}
                     />
+                    <p className="text-[10px] text-slate-400 mt-0.5">Your official Diaspora ID and verification updates will be communicated via this email.</p>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-600">Password</label>
-                    <input 
-                      type="password" required className="clay-input" placeholder="••••••••"
-                      value={regData.password} onChange={e => setRegData({...regData, password: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="clay-card-inner p-4 space-y-2">
-                    <h4 className="text-xs font-bold text-slate-700">Verification Simulations (MVP)</h4>
-                    <p className="text-xs text-slate-500">
-                      In the complete release, OTP code will be sent to confirm your email and phone. For this Phase 1 MVP, verification is simulated automatically upon submission.
+                  <div className="clay-card-inner p-4 space-y-2 bg-emerald-50/40 border-emerald-200">
+                    <h4 className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                      <Shield size={14} className="text-emerald-600" /> Direct Diaspora Portal Access
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      No password required. Once submitted, your registration will be sent to the Presidential Diaspora Office for approval. Your Virtual Card and Diaspora ID will automatically generate upon approval.
                     </p>
                   </div>
 
@@ -1451,29 +1482,30 @@ export default function Home() {
 
             {/* IF LOGGED IN AND SUBMITTED ID / REGISTERED BUT STILL PENDING ADMIN VERIFICATION (or REJECTED or unknown status) */}
             {currentUser && userType === 'MEMBER' && currentUser.isRegistered && !['APPROVED', 'SUSPENDED'].includes(currentUser.status) && (
-              <div className="clay-card p-8 md:p-12 text-center space-y-6 max-w-xl mx-auto no-print border border-amber-200 bg-amber-50/40">
+              <div className="clay-card p-8 md:p-12 text-center space-y-6 max-w-xl mx-auto no-print border-2 border-amber-300 bg-amber-50/50 shadow-xl rounded-3xl animate-in fade-in zoom-in-95">
                 <div className="w-20 h-20 rounded-3xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-inner animate-pulse">
-                  <Clock size={40} />
+                  <Clock size={42} />
                 </div>
                 
                 <div className="space-y-3">
-                  <span className="inline-block bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                    Awaiting Admin Verification
+                  <span className="inline-block bg-amber-500 text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
+                    Registration Submitted — Awaiting Approval
                   </span>
-                  <h3 className="text-2xl font-black text-slate-800">Diaspora ID Under Verification</h3>
+                  <h3 className="text-2xl font-black text-slate-800">Registration Complete, Please Wait for Approval</h3>
                   <p className="text-slate-600 text-sm leading-relaxed">
-                    Your Diaspora ID {currentUser.diasporaId ? <strong className="text-emerald-800 bg-white px-2 py-0.5 rounded border border-amber-200 font-mono text-sm">{currentUser.diasporaId}</strong> : <strong>submission</strong>} is currently waiting for verification by the Presidential Diaspora Admin Office.
+                    Thank you, <strong>{currentUser.fullName}</strong>. Your diaspora registration has been successfully submitted and is now awaiting official approval from the Presidential Diaspora Office.
                   </p>
                   
-                  <div className="bg-white p-5 rounded-2xl border border-amber-200/60 text-xs text-slate-600 space-y-2.5 text-left shadow-sm">
-                    <p className="flex items-center gap-2 font-bold text-slate-800">
-                      <Mail size={16} className="text-emerald-600" /> You will be notified via email:
+                  <div className="bg-white p-5 rounded-2xl border border-amber-200 text-xs text-slate-600 space-y-3 text-left shadow-sm">
+                    <div className="flex items-center gap-2 font-bold text-slate-800 border-b pb-2">
+                      <CheckCircle size={16} className="text-emerald-600" />
+                      <span>Automatic Virtual Card Generation</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      As soon as the Administrator approves your registration, your <strong>Official Virtual Diaspora ID Card</strong> and <strong>Unique Diaspora Number</strong> will automatically create and activate on this screen in real-time.
                     </p>
-                    <p className="text-slate-500 pl-6 leading-relaxed">
-                      An official confirmation email will be sent to <strong>{currentUser.account?.email || currentUser.email}</strong> as soon as the Admin verifies and approves your Diaspora ID.
-                    </p>
-                    <p className="text-slate-500 pl-6 leading-relaxed">
-                      Once verified, your <strong>Official Virtual ID Card</strong>, <strong>Issue Reporting Desk</strong>, and <strong>Consular Support</strong> will automatically unlock here.
+                    <p className="text-slate-400 text-[11px] flex items-center gap-1.5">
+                      <RefreshCw size={12} className="animate-spin text-emerald-600" /> System is actively monitoring verification status in real-time.
                     </p>
                   </div>
                 </div>
