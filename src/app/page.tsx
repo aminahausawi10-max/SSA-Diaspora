@@ -113,12 +113,13 @@ export default function Home() {
   const [showDiasporaIdModal, setShowDiasporaIdModal] = useState(false);
   const [inputDiasporaId, setInputDiasporaId] = useState('');
   const [diasporaIdError, setDiasporaIdError] = useState('');
+  const [isSubmittingReg, setIsSubmittingReg] = useState(false);
 
   // Super Admin Notifications State
   const [adminNotifications, setAdminNotifications] = useState<Array<{ id: string; message: string; time: string; type: 'member' | 'case' | 'urgent'; read: boolean }>>([]);
   const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
-  const prevPendingCountRef = useRef<number>(0);
-  const prevCasesCountRef = useRef<number>(0);
+  const prevPendingCountRef = useRef<number>(-1);
+  const prevCasesCountRef = useRef<number>(-1);
 
   // Play audio chime for Super Admin
   const playNotificationChime = () => {
@@ -171,7 +172,7 @@ export default function Home() {
         const currentPending = mems.filter(m => m.status === 'PENDING').length;
 
         // Check if there is a new registrant for staff/super user
-        if (prevPendingCountRef.current > 0 && currentPending > prevPendingCountRef.current) {
+        if (prevPendingCountRef.current >= 0 && currentPending > prevPendingCountRef.current) {
           const newMember = mems.find(m => m.status === 'PENDING');
           const newNotif = {
             id: 'notif-' + Date.now(),
@@ -182,6 +183,16 @@ export default function Home() {
           };
           setAdminNotifications(prev => [newNotif, ...prev.slice(0, 19)]);
           playNotificationChime();
+        } else if (prevPendingCountRef.current === -1 && currentPending > 0) {
+          const pendingList = mems.filter(m => m.status === 'PENDING');
+          const initialNotifs = pendingList.slice(0, 5).map(m => ({
+            id: 'notif-init-' + m.id,
+            message: `🔔 Pending Approval: ${m.fullName} (${m.overseasAddress?.country || 'Overseas'})`,
+            time: new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            type: 'member' as const,
+            read: false
+          }));
+          setAdminNotifications(initialNotifs);
         }
         prevPendingCountRef.current = currentPending;
 
@@ -195,7 +206,7 @@ export default function Home() {
         const css: any[] = dataCases.cases;
         const currentCases = css.length;
 
-        if (prevCasesCountRef.current > 0 && currentCases > prevCasesCountRef.current) {
+        if (prevCasesCountRef.current >= 0 && currentCases > prevCasesCountRef.current) {
           const newCase = css[0];
           const newNotif = {
             id: 'notif-c-' + Date.now(),
@@ -348,6 +359,12 @@ export default function Home() {
   // Submit Registration
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!regData.fullName?.trim() || !regData.email?.trim()) {
+      alert('Please provide your Full Name and Email Address.');
+      return;
+    }
+
+    setIsSubmittingReg(true);
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -356,11 +373,11 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.success) {
-        alert('Registration Successful! Your profile is pending verification.');
-        // Log user in automatically
-        setCurrentUser(data.member);
+        // Log user in automatically to their portal
+        const newMember = { ...data.member, isRegistered: true };
+        setCurrentUser(newMember);
         setUserType('MEMBER');
-        localStorage.setItem('ssa_user', JSON.stringify(data.member));
+        localStorage.setItem('ssa_user', JSON.stringify(newMember));
         localStorage.setItem('ssa_usertype', 'MEMBER');
         setActiveTab('portal');
         setRegStep(1);
@@ -373,13 +390,15 @@ export default function Home() {
           email: '', password: '', emergencyNgName: '', emergencyNgRel: '', emergencyNgAddress: '', emergencyNgPhone: '',
           emergencyOsName: '', emergencyOsRel: '', emergencyOsAddress: '', emergencyOsPhone: ''
         });
-        fetchData();
+        await fetchData();
       } else {
-        alert(data.error || 'Registration failed.');
+        alert(data.error || 'Registration failed. Please verify your details.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('An error occurred during registration.');
+      alert('An error occurred during registration: ' + (err.message || 'Network error'));
+    } finally {
+      setIsSubmittingReg(false);
     }
   };
 
@@ -1139,7 +1158,7 @@ export default function Home() {
                   <h3 className="font-bold text-slate-800 border-b pb-2">Step 1 — Personal Information</h3>
                   
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-600">Full Name (as in Passport)</label>
+                    <label className="text-xs font-bold text-slate-600">Full Name (as in Passport) *</label>
                     <input 
                       type="text" required className="clay-input" placeholder="e.g. Amina Musa Bello"
                       value={regData.fullName} onChange={e => setRegData({...regData, fullName: e.target.value})}
@@ -1150,7 +1169,7 @@ export default function Home() {
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">Date of Birth</label>
                       <input 
-                        type="date" required className="clay-input"
+                        type="date" className="clay-input"
                         value={regData.dob} onChange={e => setRegData({...regData, dob: e.target.value})}
                       />
                     </div>
@@ -1171,14 +1190,14 @@ export default function Home() {
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">State of Origin</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="e.g. Kano"
+                        type="text" className="clay-input" placeholder="e.g. Kano"
                         value={regData.stateOfOrigin} onChange={e => setRegData({...regData, stateOfOrigin: e.target.value})}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">Local Government Area (LGA)</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="e.g. Fagge"
+                        type="text" className="clay-input" placeholder="e.g. Fagge"
                         value={regData.lga} onChange={e => setRegData({...regData, lga: e.target.value})}
                       />
                     </div>
@@ -1202,12 +1221,12 @@ export default function Home() {
               {/* STEP 2: Nigerian Address */}
               {regStep === 2 && (
                 <div className="space-y-4">
-                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 2 — Nigerian Home Address</h3>
+                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 2 — Nigerian Home Address (Optional)</h3>
                   
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-slate-600">House Number / Street</label>
                     <input 
-                      type="text" required className="clay-input" placeholder="e.g. 15 Gwarimpa Crescent"
+                      type="text" className="clay-input" placeholder="e.g. 15 Gwarimpa Crescent"
                       value={regData.nigerianStreet} onChange={e => setRegData({...regData, nigerianStreet: e.target.value})}
                     />
                   </div>
@@ -1216,14 +1235,14 @@ export default function Home() {
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">City</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="Abuja"
+                        type="text" className="clay-input" placeholder="Abuja"
                         value={regData.nigerianCity} onChange={e => setRegData({...regData, nigerianCity: e.target.value})}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">State</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="FCT"
+                        type="text" className="clay-input" placeholder="FCT"
                         value={regData.nigerianState} onChange={e => setRegData({...regData, nigerianState: e.target.value})}
                       />
                     </div>
@@ -1232,7 +1251,7 @@ export default function Home() {
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-slate-600">Phone Number (Nigeria)</label>
                     <input 
-                      type="tel" required className="clay-input" placeholder="+234 803 123 4567"
+                      type="tel" className="clay-input" placeholder="+234 803 123 4567"
                       value={regData.nigerianPhone} onChange={e => setRegData({...regData, nigerianPhone: e.target.value})}
                     />
                   </div>
@@ -1246,7 +1265,7 @@ export default function Home() {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs font-bold text-slate-600">Country of Residence</label>
+                      <label className="text-xs font-bold text-slate-600">Country of Residence *</label>
                       <select 
                         className="clay-input font-medium" value={regData.overseasCountry}
                         onChange={e => setRegData({...regData, overseasCountry: e.target.value})}
@@ -1259,7 +1278,7 @@ export default function Home() {
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">State / Province</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="e.g. London"
+                        type="text" className="clay-input" placeholder="e.g. London"
                         value={regData.overseasState} onChange={e => setRegData({...regData, overseasState: e.target.value})}
                       />
                     </div>
@@ -1269,14 +1288,14 @@ export default function Home() {
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">City</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="e.g. Croydon"
+                        type="text" className="clay-input" placeholder="e.g. Croydon"
                         value={regData.overseasCity} onChange={e => setRegData({...regData, overseasCity: e.target.value})}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">Street / Full Address</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="e.g. 10 High Street"
+                        type="text" className="clay-input" placeholder="e.g. 10 High Street"
                         value={regData.overseasStreet} onChange={e => setRegData({...regData, overseasStreet: e.target.value})}
                       />
                     </div>
@@ -1285,7 +1304,7 @@ export default function Home() {
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-slate-600">Phone Number (Overseas)</label>
                     <input 
-                      type="tel" required className="clay-input" placeholder="+44 7911 123456"
+                      type="tel" className="clay-input" placeholder="+44 7911 123456"
                       value={regData.overseasPhone} onChange={e => setRegData({...regData, overseasPhone: e.target.value})}
                     />
                   </div>
@@ -1295,20 +1314,20 @@ export default function Home() {
               {/* STEP 4: Identification */}
               {regStep === 4 && (
                 <div className="space-y-4">
-                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 4 — National Identification</h3>
+                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 4 — National Identification (Optional)</h3>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">Nigerian Passport Number</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="A00000000"
+                        type="text" className="clay-input" placeholder="A00000000"
                         value={regData.passportNumber} onChange={e => setRegData({...regData, passportNumber: e.target.value})}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-xs font-bold text-slate-600">National Identification Number (NIN)</label>
                       <input 
-                        type="text" required className="clay-input" placeholder="12345678901"
+                        type="text" className="clay-input" placeholder="12345678901"
                         value={regData.ninNumber} onChange={e => setRegData({...regData, ninNumber: e.target.value})}
                       />
                     </div>
@@ -1366,23 +1385,23 @@ export default function Home() {
               {/* STEP 6: Emergency Contacts */}
               {regStep === 6 && (
                 <div className="space-y-5">
-                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 6 — Emergency Contacts</h3>
+                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 6 — Emergency Contacts (Optional)</h3>
                   
                   {/* Contact 1 */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">Emergency Contact 1 — Nigeria</h4>
+                    <h4 className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">Emergency Contact 1 — Nigeria (Optional)</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Full Name</label>
                         <input 
-                          type="text" required className="clay-input" placeholder="John Ade"
+                          type="text" className="clay-input" placeholder="John Ade"
                           value={regData.emergencyNgName} onChange={e => setRegData({...regData, emergencyNgName: e.target.value})}
                         />
                       </div>
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Relationship</label>
                         <input 
-                          type="text" required className="clay-input" placeholder="Brother"
+                          type="text" className="clay-input" placeholder="Brother"
                           value={regData.emergencyNgRel} onChange={e => setRegData({...regData, emergencyNgRel: e.target.value})}
                         />
                       </div>
@@ -1391,14 +1410,14 @@ export default function Home() {
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Full Address</label>
                         <input 
-                          type="text" required className="clay-input" placeholder="Ikeja, Lagos"
+                          type="text" className="clay-input" placeholder="Ikeja, Lagos"
                           value={regData.emergencyNgAddress} onChange={e => setRegData({...regData, emergencyNgAddress: e.target.value})}
                         />
                       </div>
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Phone Number</label>
                         <input 
-                          type="tel" required className="clay-input" placeholder="+234 80..."
+                          type="tel" className="clay-input" placeholder="+234 80..."
                           value={regData.emergencyNgPhone} onChange={e => setRegData({...regData, emergencyNgPhone: e.target.value})}
                         />
                       </div>
@@ -1407,19 +1426,19 @@ export default function Home() {
 
                   {/* Contact 2 */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">Emergency Contact 2 — Country of Residence</h4>
+                    <h4 className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">Emergency Contact 2 — Country of Residence (Optional)</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Full Name</label>
                         <input 
-                          type="text" required className="clay-input" placeholder="Sarah Smith"
+                          type="text" className="clay-input" placeholder="Sarah Smith"
                           value={regData.emergencyOsName} onChange={e => setRegData({...regData, emergencyOsName: e.target.value})}
                         />
                       </div>
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Relationship</label>
                         <input 
-                          type="text" required className="clay-input" placeholder="Spouse"
+                          type="text" className="clay-input" placeholder="Spouse"
                           value={regData.emergencyOsRel} onChange={e => setRegData({...regData, emergencyOsRel: e.target.value})}
                         />
                       </div>
@@ -1428,14 +1447,14 @@ export default function Home() {
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Full Address</label>
                         <input 
-                          type="text" required className="clay-input" placeholder="London, UK"
+                          type="text" className="clay-input" placeholder="London, UK"
                           value={regData.emergencyOsAddress} onChange={e => setRegData({...regData, emergencyOsAddress: e.target.value})}
                         />
                       </div>
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Phone Number</label>
                         <input 
-                          type="tel" required className="clay-input" placeholder="+44 79..."
+                          type="tel" className="clay-input" placeholder="+44 79..."
                           value={regData.emergencyOsPhone} onChange={e => setRegData({...regData, emergencyOsPhone: e.target.value})}
                         />
                       </div>
@@ -1450,6 +1469,7 @@ export default function Home() {
                   <button 
                     type="button" onClick={() => setRegStep(regStep - 1)}
                     className="clay-btn clay-btn-grey px-5 py-2.5 text-xs flex items-center gap-1"
+                    disabled={isSubmittingReg}
                   >
                     <ArrowLeft size={14} /> Back
                   </button>
@@ -1457,19 +1477,42 @@ export default function Home() {
                   <div />
                 )}
 
-                {regStep < 6 ? (
+                {regStep < 5 && (
                   <button 
                     type="button" onClick={() => setRegStep(regStep + 1)}
                     className="clay-btn px-6 py-2.5 text-xs flex items-center gap-1"
+                    disabled={isSubmittingReg}
                   >
                     Next <ArrowRight size={14} />
                   </button>
-                ) : (
+                )}
+
+                {regStep === 5 && (
+                  <div className="flex items-center gap-2">
+                    <button 
+                      type="button" onClick={() => setRegStep(6)}
+                      className="clay-btn clay-btn-grey px-4 py-2.5 text-xs flex items-center gap-1 text-slate-600"
+                      disabled={isSubmittingReg}
+                    >
+                      Add Emergency Contacts <ArrowRight size={13} />
+                    </button>
+                    <button 
+                      type="submit"
+                      disabled={isSubmittingReg}
+                      className="clay-btn clay-btn-green px-7 py-2.5 text-xs flex items-center gap-1 text-white font-bold"
+                    >
+                      {isSubmittingReg ? 'Submitting...' : 'Submit Registration'} <CheckCircle size={14} />
+                    </button>
+                  </div>
+                )}
+
+                {regStep === 6 && (
                   <button 
                     type="submit"
-                    className="clay-btn clay-btn-green px-8 py-2.5 text-xs flex items-center gap-1 text-white"
+                    disabled={isSubmittingReg}
+                    className="clay-btn clay-btn-green px-8 py-2.5 text-xs flex items-center gap-1 text-white font-bold"
                   >
-                    Submit Registration <CheckCircle size={14} />
+                    {isSubmittingReg ? 'Submitting...' : 'Submit Registration'} <CheckCircle size={14} />
                   </button>
                 )}
               </div>
