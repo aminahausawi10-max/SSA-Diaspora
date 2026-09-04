@@ -131,8 +131,9 @@ function writeLocalDb(db: typeof defaultDb) {
 }
 
 // Check database environment
-const rawDatabaseUrl = process.env.DATABASE_URL;
-const databaseUrl = rawDatabaseUrl ? rawDatabaseUrl.trim().replace(/^["']|["']$/g, '') : undefined;
+const DEFAULT_DATABASE_URL = 'postgresql://neondb_owner:npg_DpIVbjQh3Rz5@ep-green-breeze-at2cczuz-pooler.c-9.us-east-1.aws.neon.tech/mmd?sslmode=require';
+const rawDatabaseUrl = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
+const databaseUrl = rawDatabaseUrl ? rawDatabaseUrl.trim().replace(/^["']|["']$/g, '') : DEFAULT_DATABASE_URL;
 let neonPool: Pool | null = null;
 let isInitialized = false;
 let initPromise: Promise<void> | null = null;

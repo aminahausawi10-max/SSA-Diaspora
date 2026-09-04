@@ -115,32 +115,6 @@ export default function Home() {
   const [diasporaIdError, setDiasporaIdError] = useState('');
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
 
-  // Super Admin Notifications State
-  const [adminNotifications, setAdminNotifications] = useState<Array<{ id: string; message: string; time: string; type: 'member' | 'case' | 'urgent'; read: boolean }>>([]);
-  const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
-  const prevPendingCountRef = useRef<number>(-1);
-  const prevCasesCountRef = useRef<number>(-1);
-
-  // Play audio chime for Super Admin
-  const playNotificationChime = () => {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.35);
-    } catch (e) {
-      console.warn('Audio chime could not play:', e);
-    }
-  };
-
   // Admin Manual Adjustments State
   const [manualAdjustment, setManualAdjustment] = useState({
     category: 'Total Members',
@@ -169,33 +143,6 @@ export default function Home() {
       const dataMembers = await resMembers.json();
       if (dataMembers.success) {
         const mems: any[] = dataMembers.members;
-        const currentPending = mems.filter(m => m.status === 'PENDING').length;
-
-        // Check if there is a new registrant for staff/super user
-        if (prevPendingCountRef.current >= 0 && currentPending > prevPendingCountRef.current) {
-          const newMember = mems.find(m => m.status === 'PENDING');
-          const newNotif = {
-            id: 'notif-' + Date.now(),
-            message: `🔔 New Member Registration: ${newMember?.fullName || 'A diaspora citizen'} is waiting for your approval!`,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            type: 'member' as const,
-            read: false
-          };
-          setAdminNotifications(prev => [newNotif, ...prev.slice(0, 19)]);
-          playNotificationChime();
-        } else if (prevPendingCountRef.current === -1 && currentPending > 0) {
-          const pendingList = mems.filter(m => m.status === 'PENDING');
-          const initialNotifs = pendingList.slice(0, 5).map(m => ({
-            id: 'notif-init-' + m.id,
-            message: `🔔 Pending Approval: ${m.fullName} (${m.overseasAddress?.country || 'Overseas'})`,
-            time: new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            type: 'member' as const,
-            read: false
-          }));
-          setAdminNotifications(initialNotifs);
-        }
-        prevPendingCountRef.current = currentPending;
-
         setMembers(mems);
         calculateStats(mems, cases);
       }
@@ -204,22 +151,6 @@ export default function Home() {
       const dataCases = await resCases.json();
       if (dataCases.success) {
         const css: any[] = dataCases.cases;
-        const currentCases = css.length;
-
-        if (prevCasesCountRef.current >= 0 && currentCases > prevCasesCountRef.current) {
-          const newCase = css[0];
-          const newNotif = {
-            id: 'notif-c-' + Date.now(),
-            message: `🚨 New Diaspora Case Reported (${newCase?.category || 'General'}): ${newCase?.country || 'Overseas'}`,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            type: (newCase?.isUrgent ? 'urgent' : 'case') as 'urgent' | 'case' | 'member',
-            read: false
-          };
-          setAdminNotifications(prev => [newNotif, ...prev.slice(0, 19)]);
-          playNotificationChime();
-        }
-        prevCasesCountRef.current = currentCases;
-
         setCases(css);
         calculateStats(members, css);
       }
@@ -846,81 +777,13 @@ export default function Home() {
         <div className="flex items-center gap-3">
           {currentUser ? (
             <div className="flex items-center gap-3">
-              {/* Super Admin & Staff Notification Bell */}
               {userType === 'STAFF' && (
-                <div className="relative">
-                  <button 
-                    onClick={() => setShowNotificationDrawer(!showNotificationDrawer)}
-                    className="clay-btn p-2 rounded-xl text-slate-600 hover:text-emerald-700 relative"
-                    title="Live Notifications"
-                  >
-                    {stats.pendingMembers > 0 ? (
-                      <BellRing size={20} className="text-amber-500 animate-bounce" />
-                    ) : (
-                      <Bell size={20} />
-                    )}
-                    {stats.pendingMembers > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-rose-600 text-white font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-pulse">
-                        {stats.pendingMembers}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Notification Dropdown Drawer */}
-                  {showNotificationDrawer && (
-                    <div className="absolute right-0 mt-3 w-80 sm:w-96 clay-card bg-white p-4 shadow-2xl border border-emerald-200 z-50 animate-in fade-in zoom-in-95 space-y-3">
-                      <div className="flex justify-between items-center border-b pb-2">
-                        <div className="flex items-center gap-2 font-bold text-sm text-slate-800">
-                          <Bell className="text-emerald-600" size={16} />
-                          <span>Super Admin Notifications</span>
-                        </div>
-                        <button 
-                          onClick={() => setAdminNotifications([])}
-                          className="text-[10px] text-slate-400 hover:text-slate-600 font-semibold"
-                        >
-                          Clear
-                        </button>
-                      </div>
-
-                      {/* Notification list */}
-                      <div className="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
-                        {stats.pendingMembers > 0 && (
-                          <div className="clay-card-inner p-2.5 bg-amber-50 border-amber-200 flex items-start gap-2">
-                            <span className="text-base">🔔</span>
-                            <div className="space-y-0.5">
-                              <p className="font-bold text-amber-900">
-                                {stats.pendingMembers} Member{stats.pendingMembers > 1 ? 's' : ''} Awaiting Approval
-                              </p>
-                              <p className="text-[10px] text-amber-700">
-                                New registrations submitted and waiting for your official verification.
-                              </p>
-                              <button 
-                                onClick={() => {
-                                  setActiveTab('admin');
-                                  setShowNotificationDrawer(false);
-                                }}
-                                className="text-[10px] font-bold text-emerald-700 underline pt-1 block"
-                              >
-                                View & Approve Now →
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {adminNotifications.length === 0 && stats.pendingMembers === 0 ? (
-                          <p className="text-slate-400 text-center py-6 text-xs">No unread notifications.</p>
-                        ) : (
-                          adminNotifications.map(n => (
-                            <div key={n.id} className="clay-card-inner p-2.5 space-y-1">
-                              <p className="font-semibold text-slate-800 text-[11px] leading-snug">{n.message}</p>
-                              <span className="text-[9px] text-slate-400 block">{n.time}</span>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <button 
+                  onClick={() => setActiveTab('admin')}
+                  className="clay-btn bg-emerald-600 clay-btn-green text-white text-xs px-3 py-1.5 flex items-center gap-1.5 font-bold"
+                >
+                  <Briefcase size={14} /> Admin Dashboard
+                </button>
               )}
 
               <div className="text-right hidden md:block">
