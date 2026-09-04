@@ -3,6 +3,9 @@ import { db, Member } from '@/lib/db';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
