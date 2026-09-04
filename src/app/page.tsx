@@ -220,7 +220,7 @@ export default function Home() {
     calculateStats(members, cases);
   }, [members, cases, customOffsets]);
 
-  // Real-time Auto-refresh for Member Approval & Virtual Card generation
+  // Real-time Auto-refresh for Member Approval & Virtual Card generation (for Members)
   useEffect(() => {
     if (!currentUser || userType !== 'MEMBER' || !currentUser.isRegistered || currentUser.status === 'APPROVED') {
       return;
@@ -246,9 +246,22 @@ export default function Home() {
       } catch (err) {
         console.error('Auto status check error:', err);
       }
-    }, 4000);
+    }, 3000);
 
     return () => clearInterval(interval);
+  }, [currentUser, userType]);
+
+  // Real-time Auto-polling for Admin Panel (Fetches new registrations automatically every 4s)
+  useEffect(() => {
+    if (!currentUser || userType !== 'STAFF') {
+      return;
+    }
+
+    const adminInterval = setInterval(() => {
+      fetchData();
+    }, 4000);
+
+    return () => clearInterval(adminInterval);
   }, [currentUser, userType]);
 
   // Handle file base64 conversions
@@ -2074,9 +2087,18 @@ export default function Home() {
                   
                   {/* Pending Registrations list */}
                   <div className="clay-card p-6 space-y-4">
-                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                      <Clock className="text-amber-500" size={18} /> Pending Member Approvals ({members.filter(m => m.status === 'PENDING').length})
-                    </h3>
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <Clock className="text-amber-500" size={18} /> Pending Member Approvals ({members.filter(m => m.status === 'PENDING').length})
+                      </h3>
+                      <button 
+                        onClick={() => fetchData()}
+                        className="text-xs text-emerald-600 hover:text-emerald-800 font-bold flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200"
+                        title="Refresh Registrations"
+                      >
+                        <RefreshCw size={13} /> Refresh List
+                      </button>
+                    </div>
 
                     <div className="space-y-4 max-h-96 overflow-y-auto pr-1">
                       {members.filter(m => m.status === 'PENDING').length === 0 ? (
