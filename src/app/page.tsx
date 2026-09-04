@@ -1685,7 +1685,7 @@ export default function Home() {
                           <span className="text-2xl">🇳🇬</span>
                           <div>
                             <h4 className="text-sm font-bold tracking-wider text-slate-800 leading-tight">SSA DIASPORA</h4>
-                            <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-tight">Presidential Support Platform</p>
+                            <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-tight">Diaspora Membership ID Card</p>
                           </div>
                         </div>
                         <div className="text-right">
