@@ -169,7 +169,7 @@ export const notifications = {
       <div style="font-family: sans-serif; padding: 20px; color: #333;">
         <h2 style="color: #10b981;">SSA Diaspora Sign-In Notification</h2>
         <p>Hello <strong>${name}</strong>,</p>
-        <p>You have successfully signed in to the <strong>SSA Diaspora Presidential Support Platform</strong>.</p>
+        <p>You have successfully signed in to the <strong>SSA Diaspora Support Platform</strong>.</p>
         <p><strong>Sign-in Time:</strong> ${timeStr}</p>
         <p>If you did not perform this login, please contact the SSA Diaspora Security Team immediately.</p>
         <hr style="border: 0; border-top: 1px solid #eee;" />

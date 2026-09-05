@@ -818,7 +818,7 @@ export default function Home() {
       <header className="sticky top-0 z-40 w-full bg-white/85 backdrop-blur-xl border-b border-emerald-100/80 px-6 py-4 shadow-sm flex items-center justify-between no-print">
         <div className="flex items-center gap-3.5">
           <div className="relative">
-            <img src="/presidency_seal.png" className="w-12 h-12 object-contain rounded-2xl shadow-md p-0.5 bg-gradient-to-br from-white to-emerald-50 border border-emerald-200" alt="Presidency Seal" />
+            <img src="/logo.png" className="w-12 h-12 object-contain rounded-2xl shadow-md p-0.5 bg-gradient-to-br from-white to-emerald-50 border border-emerald-200" alt="SSA Diaspora Logo" />
             <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">✓</span>
           </div>
           <div>
@@ -826,7 +826,7 @@ export default function Home() {
               <h1 className="text-xl font-black tracking-tight text-slate-900">SSA DIASPORA</h1>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 hidden sm:inline-block">Official</span>
             </div>
-            <p className="text-xs text-emerald-700 font-bold tracking-tight">Presidency Diaspora Platform • Federal Republic of Nigeria</p>
+            <p className="text-xs text-emerald-700 font-bold tracking-tight">Diaspora Platform • Federal Republic of Nigeria</p>
           </div>
         </div>
 
@@ -885,7 +885,7 @@ export default function Home() {
               
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-bold shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                Official Presidential Diaspora Support & Identification Platform
+                Diaspora Support & Identification Platform
               </div>
 
               <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
@@ -893,7 +893,7 @@ export default function Home() {
                 <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 bg-clip-text text-transparent">Across the Globe</span>
               </h2>
               <p className="text-slate-600 text-base md:text-lg max-w-2xl mx-auto font-normal leading-relaxed">
-                Securely register online, claim your verified Diaspora Membership ID Card, access rapid consular/welfare support, and connect directly with the Presidency.
+                Securely register online, claim your verified Diaspora Membership ID Card, access rapid consular/welfare support, and connect directly with the Diaspora Coordination Office.
               </p>
               
               <div className="flex flex-wrap justify-center gap-4 pt-2">
@@ -1075,8 +1075,8 @@ export default function Home() {
                     <MapPin className="text-slate-400 shrink-0 mt-1" size={18} />
                     <p>
                       SSA Diaspora Coordination Office,<br />
-                      State House Villa, Abuja,<br />
-                      FCT, Nigeria.
+                      Wuse Zone 5, Abuja,<br />
+                      Federal Capital Territory of Nigeria.
                     </p>
                   </div>
                   <div className="flex gap-3 items-center">
@@ -1350,14 +1350,14 @@ export default function Home() {
                       <Shield size={14} className="text-emerald-600" /> Direct Diaspora Portal Access
                     </h4>
                     <p className="text-xs text-slate-600 leading-relaxed">
-                      No password required. Once submitted, your registration will be sent to the Presidential Diaspora Office for approval. Your Virtual Card and Diaspora ID will automatically generate upon approval.
+                      No password required. Once submitted, your registration will be sent to the Diaspora Coordination Office for approval. Your Virtual Card and Diaspora ID will automatically generate upon approval.
                     </p>
                   </div>
 
                   <label className="flex items-start gap-2.5 cursor-pointer">
                     <input type="checkbox" required className="mt-1" defaultChecked />
                     <span className="text-xs text-slate-500">
-                      I consent to the Privacy Policy and agree to share my information with the Presidential Office for verified ID generation and coordination.
+                      I consent to the Privacy Policy and agree to share my information with the Diaspora Coordination Office for verified ID generation and coordination.
                     </span>
                   </label>
                 </div>
@@ -1565,7 +1565,7 @@ export default function Home() {
               <div className="max-w-md mx-auto space-y-6 no-print">
                 <div className="text-center space-y-2">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-sm">
-                    <Shield size={13} className="text-emerald-600" /> Official Presidency Portal Access
+                    <Shield size={13} className="text-emerald-600" /> Official Member Portal Access
                   </div>
                   <h2 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900">Sign In to Dashboard</h2>
                   <p className="text-xs md:text-sm text-slate-500 font-medium">Access your digital card, consular assistance, and verified records.</p>
@@ -1679,7 +1679,7 @@ export default function Home() {
                   </span>
                   <h3 className="text-2xl font-black text-slate-800">Registration Complete, Please Wait for Approval</h3>
                   <p className="text-slate-600 text-sm leading-relaxed">
-                    Thank you, <strong>{currentUser.fullName}</strong>. Your diaspora registration has been successfully submitted and is now awaiting official approval from the Presidential Diaspora Office.
+                    Thank you, <strong>{currentUser.fullName}</strong>. Your diaspora registration has been successfully submitted and is now awaiting official approval from the Diaspora Coordination Office.
                   </p>
                   
                   <div className="bg-white p-5 rounded-2xl border border-amber-200 text-xs text-slate-600 space-y-3 text-left shadow-sm">
@@ -1746,7 +1746,7 @@ export default function Home() {
                   </span>
                   <h3 className="text-xl font-black text-slate-800">Your Account Has Been Suspended</h3>
                   <p className="text-slate-600 text-sm leading-relaxed">
-                    Your Diaspora ID account has been temporarily suspended. Please contact the Presidential Diaspora Admin Office for assistance.
+                    Your Diaspora ID account has been temporarily suspended. Please contact the Diaspora Admin Office for assistance.
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
@@ -1885,7 +1885,7 @@ export default function Home() {
                           {/* Footer & QR Code */}
                           <div className="flex justify-between items-end border-t border-slate-200/60 pt-2.5">
                             <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
-                              Digital Membership Card • Presidency Platform
+                              Digital Membership Card • SSA Diaspora Platform
                             </span>
                             
                             {/* Dynamic QR Code link */}

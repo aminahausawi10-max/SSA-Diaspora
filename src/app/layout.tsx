@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SSA Diaspora Portal",
-  description: "Presidential SSA Diaspora Engagement Platform — Registration, Consular Assistance & Case Referral",
+  description: "SSA Diaspora Engagement Platform — Registration, Consular Assistance & Case Referral",
 };
 
 export default function RootLayout({

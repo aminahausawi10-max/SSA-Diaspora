@@ -99,7 +99,7 @@ const defaultDb = {
   news: [
     {
       id: 'news-1',
-      title: 'Presidential Diaspora Support Portal Launched',
+      title: 'SSA Diaspora Support Portal Launched',
       content: 'The official SSA Diaspora engagement platform has launched, providing access to Diaspora IDs, consular assistance, and case referral systems.',
       category: 'Announcement',
       createdAt: new Date().toISOString(),
