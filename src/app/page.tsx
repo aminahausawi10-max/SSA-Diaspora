@@ -52,6 +52,17 @@ export const SUPPORTED_COUNTRIES = [
   'United States of America (USA)'
 ];
 
+export const formatDiasporaId = (id?: string | null): string => {
+  if (!id) return '';
+  const trimmed = id.trim().toUpperCase();
+  if (trimmed.startsWith('SSA-DIA-') || trimmed.startsWith('SSA-')) {
+    const parts = trimmed.split('-');
+    const seq = parts[parts.length - 1];
+    return `NIG-DIA-${seq}`;
+  }
+  return trimmed;
+};
+
 export default function Home() {
   // Navigation State
   const [activeTab, setActiveTab] = useState<'home' | 'register' | 'portal' | 'admin' | 'verify'>('home');
@@ -144,9 +155,32 @@ export default function Home() {
       const resMembers = await fetch('/api/members');
       const dataMembers = await resMembers.json();
       if (dataMembers.success) {
-        const mems: any[] = dataMembers.members;
+        const mems: any[] = (dataMembers.members || []).map((m: any) => ({
+          ...m,
+          diasporaId: formatDiasporaId(m.diasporaId)
+        }));
         setMembers(mems);
         calculateStats(mems, cases);
+
+        // Auto-refresh currentUser if logged in so cached ID is immediately updated to NIG-DIA-xxxxxx
+        setCurrentUser((prev: any) => {
+          if (!prev) return null;
+          const fresh = mems.find((m: any) => 
+            m.id === prev.id || 
+            m.account?.email?.toLowerCase() === (prev.account?.email || prev.email)?.toLowerCase()
+          );
+          if (fresh) {
+            const updated = { ...prev, ...fresh, diasporaId: formatDiasporaId(fresh.diasporaId || prev.diasporaId) };
+            localStorage.setItem('ssa_user', JSON.stringify(updated));
+            return updated;
+          }
+          if (prev.diasporaId) {
+            const updated = { ...prev, diasporaId: formatDiasporaId(prev.diasporaId) };
+            localStorage.setItem('ssa_user', JSON.stringify(updated));
+            return updated;
+          }
+          return prev;
+        });
       }
 
       const resCases = await fetch('/api/cases');
@@ -207,6 +241,10 @@ export default function Home() {
     if (storedUser && storedType) {
       try {
         const parsed = JSON.parse(storedUser);
+        if (parsed.diasporaId) {
+          parsed.diasporaId = formatDiasporaId(parsed.diasporaId);
+          localStorage.setItem('ssa_user', JSON.stringify(parsed));
+        }
         if (storedType === 'STAFF' || parsed.isRegistered) {
           setCurrentUser(parsed);
           setUserType(storedType as any);
@@ -1751,7 +1789,7 @@ export default function Home() {
                             <div className="space-y-1 text-xs">
                               <p className="font-extrabold text-sm tracking-tight text-slate-900 leading-snug">{currentUser.fullName}</p>
                               <p className="text-[10px] text-slate-500 font-medium">
-                                ID: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.diasporaId || 'NIG-DIA-000001'}</strong>
+                                ID: <strong className="text-slate-900 font-bold font-mono text-[11px]">{formatDiasporaId(currentUser.diasporaId) || 'NIG-DIA-000001'}</strong>
                               </p>
                               <p className="text-[10px] text-slate-500">
                                 Country: <strong className="text-slate-800 font-semibold">{currentUser.overseasAddress?.country}</strong>
@@ -1864,7 +1902,7 @@ export default function Home() {
 
                           {/* Back Footer */}
                           <div className="flex justify-between items-center border-t border-slate-200/60 pt-2 text-[8px] text-slate-400 font-mono">
-                            <span>AUTH CODE: {currentUser.diasporaId || 'NIG-DIA-000001'}</span>
+                            <span>AUTH CODE: {formatDiasporaId(currentUser.diasporaId) || 'NIG-DIA-000001'}</span>
                             <span className="font-sans font-bold text-emerald-700">SECURE VERIFIED</span>
                           </div>
                         </div>
@@ -1892,7 +1930,7 @@ export default function Home() {
                           />
                           <div className="space-y-1 text-xs">
                             <p className="font-bold text-sm text-slate-900">{currentUser.fullName}</p>
-                            <p className="text-[10px] text-slate-600">ID: <strong className="font-mono font-bold">{currentUser.diasporaId || 'NIG-DIA-000001'}</strong></p>
+                            <p className="text-[10px] text-slate-600">ID: <strong className="font-mono font-bold">{formatDiasporaId(currentUser.diasporaId) || 'NIG-DIA-000001'}</strong></p>
                             <p className="text-[10px] text-slate-600">Country: <strong>{currentUser.overseasAddress?.country}</strong></p>
                             <p className="text-[10px] text-slate-600">State of Origin: <strong>{currentUser.stateOfOrigin}</strong></p>
                             <p className="text-[10px] text-slate-600">Phone: <strong>{currentUser.overseasAddress?.phone || currentUser.nigerianAddress?.phone || 'N/A'}</strong></p>
@@ -1903,7 +1941,7 @@ export default function Home() {
                           <span className="text-[8px] text-slate-500 font-bold uppercase">Official Digital Membership Card</span>
                           <div className="w-10 h-10 bg-white p-0.5 border">
                             {currentUser.diasporaId && (
-                              <img src={`https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent('https://ssa-diaspora.vercel.app/verify?id=' + currentUser.diasporaId)}`} className="w-full h-full" alt="QR" />
+                              <img src={`https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent('https://ssa-diaspora.vercel.app/verify?id=' + formatDiasporaId(currentUser.diasporaId))}`} className="w-full h-full" alt="QR" />
                             )}
                           </div>
                         </div>
@@ -1938,7 +1976,7 @@ export default function Home() {
                           </div>
                         </div>
                         <div className="border-t border-slate-200 pt-1 flex justify-between text-[8px] text-slate-400 font-mono">
-                          <span>AUTH CODE: {currentUser.diasporaId || 'NIG-DIA-000001'}</span>
+                          <span>AUTH CODE: {formatDiasporaId(currentUser.diasporaId) || 'NIG-DIA-000001'}</span>
                           <span>SECURE VERIFIED</span>
                         </div>
                       </div>
