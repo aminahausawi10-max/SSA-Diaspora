@@ -1839,54 +1839,37 @@ export default function Home() {
                             </div>
                           </div>
 
-                          {/* Emergency Contacts Box */}
+                          {/* Emergency Contacts Box (Compact Side-by-Side without relationship) */}
                           <div className="my-auto space-y-2 py-1">
-                            {/* Nigeria Emergency Contact if registered */}
-                            {(currentUser.emergencyContacts?.nigeria?.name || currentUser.emergencyContacts?.nigeria?.phone) && (
-                              <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 space-y-0.5 text-slate-800">
-                                <div className="flex items-center justify-between text-emerald-800 font-bold text-[9px] uppercase tracking-wider mb-0.5">
-                                  <span className="flex items-center gap-1"><PhoneCall size={11} className="text-emerald-700" /> Emergency Contact (Nigeria)</span>
-                                  {currentUser.emergencyContacts.nigeria.relationship && (
-                                    <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">{currentUser.emergencyContacts.nigeria.relationship}</span>
-                                  )}
+                            <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-3 text-slate-800 space-y-1.5">
+                              <div className="flex items-center gap-1 text-emerald-800 font-bold text-[9.5px] uppercase tracking-wider border-b border-emerald-200/60 pb-1">
+                                <PhoneCall size={11} className="text-emerald-700" /> Emergency Contact
+                              </div>
+                              
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px]">
+                                {/* Contact 1 */}
+                                <div>
+                                  <p className="text-xs font-bold text-slate-900 leading-tight">
+                                    {currentUser.emergencyContacts?.nigeria?.name || currentUser.emergencyContacts?.overseas?.name || 'Emergency Contact'}
+                                  </p>
+                                  <p className="text-slate-600 text-[10px] mt-0.5">
+                                    Phone: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.emergencyContacts?.nigeria?.phone || currentUser.emergencyContacts?.overseas?.phone || 'N/A'}</strong>
+                                  </p>
                                 </div>
-                                <p className="text-xs font-bold text-slate-900 leading-tight">
-                                  {currentUser.emergencyContacts.nigeria.name || 'Not Provided'}
-                                </p>
-                                <p className="text-[10px] text-slate-600">
-                                  Phone: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.emergencyContacts.nigeria.phone || 'N/A'}</strong>
-                                </p>
-                              </div>
-                            )}
 
-                            {/* Overseas Emergency Contact if registered */}
-                            {(currentUser.emergencyContacts?.overseas?.name || currentUser.emergencyContacts?.overseas?.phone) && (
-                              <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 space-y-0.5 text-slate-800">
-                                <div className="flex items-center justify-between text-emerald-800 font-bold text-[9px] uppercase tracking-wider mb-0.5">
-                                  <span className="flex items-center gap-1"><PhoneCall size={11} className="text-emerald-700" /> Emergency Contact (Overseas)</span>
-                                  {currentUser.emergencyContacts.overseas.relationship && (
-                                    <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">{currentUser.emergencyContacts.overseas.relationship}</span>
-                                  )}
-                                </div>
-                                <p className="text-xs font-bold text-slate-900 leading-tight">
-                                  {currentUser.emergencyContacts.overseas.name || 'Not Provided'}
-                                </p>
-                                <p className="text-[10px] text-slate-600">
-                                  Phone: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.emergencyContacts.overseas.phone || 'N/A'}</strong>
-                                </p>
+                                {/* Contact 2 beside it */}
+                                {(currentUser.emergencyContacts?.overseas?.name && currentUser.emergencyContacts?.nigeria?.name && currentUser.emergencyContacts?.overseas?.name !== currentUser.emergencyContacts?.nigeria?.name) ? (
+                                  <div className="sm:border-l sm:border-emerald-200/60 sm:pl-3">
+                                    <p className="text-xs font-bold text-slate-900 leading-tight">
+                                      {currentUser.emergencyContacts.overseas.name}
+                                    </p>
+                                    <p className="text-slate-600 text-[10px] mt-0.5">
+                                      Phone: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.emergencyContacts.overseas.phone || 'N/A'}</strong>
+                                    </p>
+                                  </div>
+                                ) : null}
                               </div>
-                            )}
-
-                            {/* Fallback if neither was registered */}
-                            {(!currentUser.emergencyContacts?.nigeria?.name && !currentUser.emergencyContacts?.nigeria?.phone && !currentUser.emergencyContacts?.overseas?.name && !currentUser.emergencyContacts?.overseas?.phone) && (
-                              <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 text-slate-800">
-                                <p className="text-[9px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1 mb-1">
-                                  <PhoneCall size={11} className="text-emerald-700" /> Emergency Contact
-                                </p>
-                                <p className="text-xs font-bold text-slate-900">Registered Contact</p>
-                                <p className="text-[10px] text-slate-600">Phone: <strong className="text-slate-900 font-bold font-mono">None registered</strong></p>
-                              </div>
-                            )}
+                            </div>
 
                             {/* Office Helpline & Notice */}
                             <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-2.5 space-y-1">
@@ -1956,20 +1939,22 @@ export default function Home() {
                           </div>
                         </div>
                         <div className="space-y-2 my-auto">
-                          {(currentUser.emergencyContacts?.nigeria?.name || currentUser.emergencyContacts?.nigeria?.phone) && (
-                            <div className="border border-emerald-200 bg-emerald-50/50 p-2 rounded text-[10px]">
-                              <p className="font-bold text-emerald-800 text-[9px] uppercase">Emergency Contact (Nigeria)</p>
-                              <p className="font-bold text-slate-900">{currentUser.emergencyContacts.nigeria.name}</p>
-                              <p>Phone: <strong>{currentUser.emergencyContacts.nigeria.phone}</strong></p>
+                          <div className="border border-emerald-200 bg-emerald-50/50 p-2.5 rounded-lg text-[10px] space-y-1">
+                            <p className="font-bold text-emerald-800 text-[9px] uppercase tracking-wider border-b border-emerald-200/60 pb-0.5">Emergency Contact</p>
+                            <div className="grid grid-cols-2 gap-2 pt-0.5">
+                              <div>
+                                <p className="font-bold text-slate-900 text-[11px]">{currentUser.emergencyContacts?.nigeria?.name || currentUser.emergencyContacts?.overseas?.name || 'Emergency Contact'}</p>
+                                <p className="text-slate-600 text-[9.5px]">Phone: <strong className="text-slate-900 font-mono font-bold">{currentUser.emergencyContacts?.nigeria?.phone || currentUser.emergencyContacts?.overseas?.phone || 'N/A'}</strong></p>
+                              </div>
+                              {(currentUser.emergencyContacts?.overseas?.name && currentUser.emergencyContacts?.nigeria?.name && currentUser.emergencyContacts?.overseas?.name !== currentUser.emergencyContacts?.nigeria?.name) ? (
+                                <div className="border-l border-emerald-200/60 pl-2">
+                                  <p className="font-bold text-slate-900 text-[11px]">{currentUser.emergencyContacts.overseas.name}</p>
+                                  <p className="text-slate-600 text-[9.5px]">Phone: <strong className="text-slate-900 font-mono font-bold">{currentUser.emergencyContacts.overseas.phone}</strong></p>
+                                </div>
+                              ) : null}
                             </div>
-                          )}
-                          {(currentUser.emergencyContacts?.overseas?.name || currentUser.emergencyContacts?.overseas?.phone) && (
-                            <div className="border border-emerald-200 bg-emerald-50/50 p-2 rounded text-[10px]">
-                              <p className="font-bold text-emerald-800 text-[9px] uppercase">Emergency Contact (Overseas)</p>
-                              <p className="font-bold text-slate-900">{currentUser.emergencyContacts.overseas.name}</p>
-                              <p>Phone: <strong>{currentUser.emergencyContacts.overseas.phone}</strong></p>
-                            </div>
-                          )}
+                          </div>
+
                           <div className="border border-slate-200 bg-slate-50 p-2 rounded text-[10px]">
                             <p><strong>Office Contact:</strong> <span className="font-bold text-emerald-700 font-mono">07047000070</span></p>
                             <p className="text-[8px] text-slate-500 pt-1">If found, please return to the nearest Nigerian Embassy, High Commission, or call 07047000070.</p>
