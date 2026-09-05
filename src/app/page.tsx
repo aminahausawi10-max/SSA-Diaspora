@@ -5,7 +5,8 @@ import {
   User, Shield, FileText, CheckCircle, AlertTriangle, Info, Clock, 
   MapPin, Phone, Mail, Award, Download, Printer, ExternalLink, 
   Search, Upload, ArrowRight, ArrowLeft, Send, Plus, Briefcase, 
-  Globe, Radio, Volume2, Video, Eye, EyeOff, Lock, Edit, Trash2, UserPlus, UserMinus, RefreshCw, Bell, BellRing
+  Globe, Radio, Volume2, Video, Eye, EyeOff, Lock, Edit, Trash2, UserPlus, UserMinus, RefreshCw, Bell, BellRing,
+  PhoneCall, RotateCw
 } from 'lucide-react';
 
 export const SUPPORTED_COUNTRIES = [
@@ -114,6 +115,7 @@ export default function Home() {
   const [inputDiasporaId, setInputDiasporaId] = useState('');
   const [diasporaIdError, setDiasporaIdError] = useState('');
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
+  const [cardSide, setCardSide] = useState<'FRONT' | 'BACK'>('FRONT');
 
   // Admin Manual Adjustments State
   const [manualAdjustment, setManualAdjustment] = useState({
@@ -1419,7 +1421,7 @@ export default function Home() {
                       type="text" 
                       required 
                       className="clay-input flex-1 text-xs uppercase" 
-                      placeholder="e.g. SSA-DIA-2026-000001"
+                      placeholder="e.g. NIG-DIA-000001"
                       value={inputDiasporaId} 
                       onChange={e => setInputDiasporaId(e.target.value)}
                     />
@@ -1670,79 +1672,226 @@ export default function Home() {
                   
                   {/* Virtual ID Card View */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 no-print">
-                      <Award size={20} className="text-emerald-600" /> Virtual ID Card
-                    </h3>
+                    <div className="flex justify-between items-center no-print">
+                      <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <Award size={20} className="text-emerald-600" /> Virtual ID Card
+                      </h3>
+                      {/* Front / Back Toggle */}
+                      <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                        <button 
+                          type="button" 
+                          onClick={() => setCardSide('FRONT')} 
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                            cardSide === 'FRONT' 
+                              ? 'bg-emerald-600 text-white shadow-sm' 
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <Award size={12} /> Front
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => setCardSide('BACK')} 
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                            cardSide === 'BACK' 
+                              ? 'bg-emerald-600 text-white shadow-sm' 
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <RotateCw size={12} /> Back
+                        </button>
+                      </div>
+                    </div>
                     
-                    {/* The Card Container */}
-                    <div className="id-card-clay id-card-print-wrap p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between h-72 text-slate-800">
-                      {/* Flag and Coat of Arms background */}
-                      <div className="absolute inset-0 bg-no-repeat bg-right-bottom opacity-10 pointer-events-none" style={{ backgroundImage: `url('https://res.cloudinary.com/dpghoiocq/image/upload/v1700000000/nigeria_map.png')` }} />
-                      
-                      {/* Top Header */}
-                      <div className="flex justify-between items-start border-b border-slate-200/50 pb-3">
-                        <div className="flex gap-2 items-center">
-                          <span className="text-2xl">🇳🇬</span>
-                          <div>
-                            <h4 className="text-sm font-bold tracking-wider text-slate-800 leading-tight">SSA DIASPORA</h4>
-                            <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-tight">Diaspora Membership ID Card</p>
+                    {/* Screen View (Toggleable Front / Back) */}
+                    <div className="no-print">
+                      {cardSide === 'FRONT' ? (
+                        /* The Front Card Container */
+                        <div className="id-card-clay p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between min-h-[300px] text-slate-800 transition-all">
+                          {/* Top Header */}
+                          <div className="flex justify-between items-center border-b border-slate-200/60 pb-3">
+                            <div className="flex gap-2.5 items-center">
+                              <img src="/presidency_seal.png" className="w-10 h-10 object-contain rounded-full shadow-xs bg-white p-0.5 border border-emerald-100 shrink-0" alt="Presidency Seal" />
+                              <div>
+                                <h4 className="text-xs sm:text-sm font-black tracking-wider text-slate-900 leading-tight uppercase">DIASPORA MEMBERSHIP</h4>
+                                <p className="text-[9px] sm:text-[10px] text-emerald-700 font-extrabold uppercase tracking-tight">Official ID Card</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                                currentUser.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-amber-100 text-amber-800 border-amber-200'
+                              }`}>
+                                {currentUser.status}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Card Body details */}
+                          <div className="flex gap-4 items-center my-auto py-2">
+                            {/* Photograph */}
+                            <img 
+                              src={currentUser.photoUrl || 'https://res.cloudinary.com/dpghoiocq/image/upload/v1700000000/placeholder_user.png'} 
+                              className="w-20 h-24 rounded-xl object-cover border-2 border-white shadow bg-slate-100 shrink-0" 
+                              alt="Photo" 
+                            />
+                            
+                            {/* Information Details */}
+                            <div className="space-y-1 text-xs">
+                              <p className="font-extrabold text-sm tracking-tight text-slate-900 leading-snug">{currentUser.fullName}</p>
+                              <p className="text-[10px] text-slate-500 font-medium">
+                                ID: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.diasporaId || 'NIG-DIA-000001'}</strong>
+                              </p>
+                              <p className="text-[10px] text-slate-500">
+                                Country: <strong className="text-slate-800 font-semibold">{currentUser.overseasAddress?.country}</strong>
+                              </p>
+                              <p className="text-[10px] text-slate-500">
+                                State of Origin: <strong className="text-slate-800 font-semibold">{currentUser.stateOfOrigin}</strong>
+                              </p>
+                              <p className="text-[10px] text-slate-500">
+                                Phone: <strong className="text-slate-800 font-semibold">{currentUser.overseasAddress?.phone || currentUser.nigerianAddress?.phone || 'N/A'}</strong>
+                              </p>
+                              {currentUser.issueDate && (
+                                <p className="text-[9px] text-slate-400">
+                                  Issued: {currentUser.issueDate}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Footer & QR Code */}
+                          <div className="flex justify-between items-end border-t border-slate-200/60 pt-2.5">
+                            <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
+                              Official Digital Membership Card
+                            </span>
+                            
+                            {/* Dynamic QR Code link */}
+                            <div className="w-11 h-11 bg-white p-1 rounded-lg shadow-inner border border-slate-200">
+                              {currentUser.diasporaId ? (
+                                <img 
+                                  src={`https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent('https://ssa-diaspora.vercel.app/verify?id=' + currentUser.diasporaId)}`} 
+                                  className="w-full h-full" 
+                                  alt="QR" 
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-slate-100 flex items-center justify-center"><Clock size={12} className="text-slate-400" /></div>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            currentUser.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                          }`}>
+                      ) : (
+                        /* The Back Card Container */
+                        <div className="id-card-clay p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between min-h-[300px] text-slate-800 transition-all">
+                          {/* Back Top Header */}
+                          <div className="flex items-center gap-2.5 border-b border-slate-200/60 pb-2.5">
+                            <img src="/presidency_seal.png" className="w-9 h-9 object-contain rounded-full shadow-xs bg-white p-0.5 border border-emerald-100 shrink-0" alt="Seal" />
+                            <div>
+                              <h4 className="text-xs font-black tracking-wider text-slate-900 leading-tight uppercase">FEDERAL REPUBLIC OF NIGERIA</h4>
+                              <p className="text-[8.5px] text-emerald-700 font-extrabold uppercase tracking-tight">Diaspora Membership ID Card</p>
+                            </div>
+                          </div>
+
+                          {/* Emergency Contact Box */}
+                          <div className="my-auto space-y-2 py-1">
+                            <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 space-y-0.5 text-slate-800">
+                              <div className="flex items-center gap-1 text-emerald-800 font-bold text-[9px] uppercase tracking-wider mb-1">
+                                <PhoneCall size={11} className="text-emerald-700" /> Emergency Contact Details
+                              </div>
+                              <p className="text-xs font-bold text-slate-900 leading-tight">
+                                {currentUser.emergencyContacts?.overseas?.name || currentUser.emergencyContacts?.nigeria?.name || 'Emergency Contact'}
+                              </p>
+                              <p className="text-[10px] text-slate-600">
+                                Phone: <strong className="text-slate-900 font-bold">{currentUser.emergencyContacts?.overseas?.phone || currentUser.emergencyContacts?.nigeria?.phone || 'N/A'}</strong>
+                              </p>
+                              <p className="text-[9px] text-slate-500">
+                                Relationship: <span className="font-semibold text-slate-700">{currentUser.emergencyContacts?.overseas?.relationship || currentUser.emergencyContacts?.nigeria?.relationship || 'Next of Kin'}</span>
+                              </p>
+                            </div>
+
+                            {/* Office Helpline & Notice */}
+                            <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-2.5 space-y-1">
+                              <div className="flex justify-between items-center text-[10px]">
+                                <span className="font-bold text-slate-700 uppercase tracking-tight text-[9px]">Official Contact:</span>
+                                <span className="font-extrabold text-emerald-700 font-mono tracking-wider text-[11px]">07047000070</span>
+                              </div>
+                              <p className="text-[8px] text-slate-500 leading-tight pt-1 border-t border-slate-200">
+                                This card remains the property of the Federal Republic of Nigeria Diaspora Service. If found, please return to the nearest Nigerian Embassy, High Commission, or call <strong>07047000070</strong>.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Back Footer */}
+                          <div className="flex justify-between items-center border-t border-slate-200/60 pt-2 text-[8px] text-slate-400 font-mono">
+                            <span>AUTH CODE: {currentUser.diasporaId || 'NIG-DIA-000001'}</span>
+                            <span className="font-sans font-bold text-emerald-700">SECURE VERIFIED</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Print Only: Render BOTH Front and Back Side together */}
+                    <div className="hidden print-only space-y-6">
+                      {/* Front for Print */}
+                      <div className="id-card-clay id-card-print-wrap p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between h-72 text-slate-800">
+                        <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                          <div className="flex gap-2 items-center">
+                            <img src="/presidency_seal.png" className="w-9 h-9 object-contain rounded-full" alt="Seal" />
+                            <div>
+                              <h4 className="text-xs font-black tracking-wider text-slate-900 leading-tight uppercase">DIASPORA MEMBERSHIP</h4>
+                              <p className="text-[9px] text-emerald-700 font-extrabold uppercase tracking-tight">Official ID Card</p>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                             {currentUser.status}
                           </span>
                         </div>
-                      </div>
-
-                      {/* Card Body details */}
-                      <div className="flex gap-4 items-center my-auto">
-                        {/* Photograph */}
-                        <img 
-                          src={currentUser.photoUrl || 'https://res.cloudinary.com/dpghoiocq/image/upload/v1700000000/placeholder_user.png'} 
-                          className="w-20 h-20 rounded-xl object-cover border-2 border-white shadow-inner bg-slate-100" 
-                          alt="Photo" 
-                        />
-                        
-                        {/* Information Details */}
-                        <div className="space-y-1 text-xs">
-                          <p className="font-bold text-sm tracking-tight text-slate-900">{currentUser.fullName}</p>
-                          <p className="text-[10px] text-slate-500 font-semibold">
-                            ID: <strong className="text-slate-800 font-bold">{currentUser.diasporaId || 'PENDING VERIFICATION'}</strong>
-                          </p>
-                          <p className="text-[10px] text-slate-500">
-                            Country: <strong className="text-slate-700">{currentUser.overseasAddress.country}</strong>
-                          </p>
-                          <p className="text-[10px] text-slate-500">
-                            State of Origin: <strong className="text-slate-700">{currentUser.stateOfOrigin}</strong>
-                          </p>
-                          {currentUser.issueDate && (
-                            <p className="text-[9px] text-slate-400">
-                              Issued: {currentUser.issueDate}
-                            </p>
-                          )}
+                        <div className="flex gap-4 items-center my-auto">
+                          <img 
+                            src={currentUser.photoUrl || 'https://res.cloudinary.com/dpghoiocq/image/upload/v1700000000/placeholder_user.png'} 
+                            className="w-20 h-20 rounded-xl object-cover border" 
+                            alt="Photo" 
+                          />
+                          <div className="space-y-1 text-xs">
+                            <p className="font-bold text-sm text-slate-900">{currentUser.fullName}</p>
+                            <p className="text-[10px] text-slate-600">ID: <strong className="font-mono font-bold">{currentUser.diasporaId || 'NIG-DIA-000001'}</strong></p>
+                            <p className="text-[10px] text-slate-600">Country: <strong>{currentUser.overseasAddress?.country}</strong></p>
+                            <p className="text-[10px] text-slate-600">State of Origin: <strong>{currentUser.stateOfOrigin}</strong></p>
+                            <p className="text-[10px] text-slate-600">Phone: <strong>{currentUser.overseasAddress?.phone || currentUser.nigerianAddress?.phone || 'N/A'}</strong></p>
+                            {currentUser.issueDate && <p className="text-[9px] text-slate-400">Issued: {currentUser.issueDate}</p>}
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-end border-t border-slate-200 pt-2">
+                          <span className="text-[8px] text-slate-500 font-bold uppercase">Official Digital Membership Card</span>
+                          <div className="w-10 h-10 bg-white p-0.5 border">
+                            {currentUser.diasporaId && (
+                              <img src={`https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent('https://ssa-diaspora.vercel.app/verify?id=' + currentUser.diasporaId)}`} className="w-full h-full" alt="QR" />
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Footer & QR Code */}
-                      <div className="flex justify-between items-end border-t border-slate-200/50 pt-3">
-                        <span className="text-[8px] text-slate-400 font-semibold uppercase tracking-wider">
-                          Official Digital Membership Card
-                        </span>
-                        
-                        {/* Dynamic QR Code link */}
-                        <div className="w-12 h-12 bg-white p-1 rounded-lg shadow-inner">
-                          {currentUser.diasporaId ? (
-                            <img 
-                              src={`https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent('https://ssa-diaspora.vercel.app/verify?id=' + currentUser.diasporaId)}`} 
-                              className="w-full h-full" 
-                              alt="QR" 
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-slate-100 flex items-center justify-center"><Clock size={12} className="text-slate-400" /></div>
-                          )}
+                      {/* Back for Print */}
+                      <div className="id-card-clay id-card-print-wrap p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between h-72 text-slate-800">
+                        <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                          <img src="/presidency_seal.png" className="w-8 h-8 object-contain rounded-full" alt="Seal" />
+                          <div>
+                            <h4 className="text-xs font-black tracking-wider text-slate-900 leading-tight uppercase">FEDERAL REPUBLIC OF NIGERIA</h4>
+                            <p className="text-[8px] text-emerald-700 font-extrabold uppercase">Diaspora Membership ID Card</p>
+                          </div>
+                        </div>
+                        <div className="space-y-2 my-auto">
+                          <div className="border border-emerald-200 bg-emerald-50/50 p-2 rounded text-[10px]">
+                            <p className="font-bold text-emerald-800 text-[9px] uppercase">Emergency Contact</p>
+                            <p className="font-bold text-slate-900">{currentUser.emergencyContacts?.overseas?.name || currentUser.emergencyContacts?.nigeria?.name || 'Emergency Contact'}</p>
+                            <p>Phone: <strong>{currentUser.emergencyContacts?.overseas?.phone || currentUser.emergencyContacts?.nigeria?.phone || 'N/A'}</strong></p>
+                          </div>
+                          <div className="border border-slate-200 bg-slate-50 p-2 rounded text-[10px]">
+                            <p><strong>Office Contact:</strong> <span className="font-bold text-emerald-700 font-mono">07047000070</span></p>
+                            <p className="text-[8px] text-slate-500 pt-1">If found, please return to the nearest Nigerian Embassy, High Commission, or call 07047000070.</p>
+                          </div>
+                        </div>
+                        <div className="border-t border-slate-200 pt-1 flex justify-between text-[8px] text-slate-400 font-mono">
+                          <span>AUTH CODE: {currentUser.diasporaId || 'NIG-DIA-000001'}</span>
+                          <span>SECURE VERIFIED</span>
                         </div>
                       </div>
                     </div>
@@ -2471,7 +2620,7 @@ export default function Home() {
                 <label className="text-xs font-bold text-slate-600">Diaspora ID Number</label>
                 <div className="flex gap-2">
                   <input 
-                    type="text" required className="clay-input flex-1" placeholder="e.g. SSA-DIA-2026-000001"
+                    type="text" required className="clay-input flex-1" placeholder="e.g. NIG-DIA-000001"
                     value={searchId} onChange={e => setSearchId(e.target.value)}
                   />
                   <button type="submit" className="clay-btn px-4">

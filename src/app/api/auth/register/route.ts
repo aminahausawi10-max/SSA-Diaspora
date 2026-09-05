@@ -58,8 +58,7 @@ export async function POST(request: Request) {
     if (!diasporaId) {
       const nextSeq = await db.getNextMemberSequence();
       const formattedSeq = String(nextSeq).padStart(6, '0');
-      const year = new Date().getFullYear();
-      diasporaId = `SSA-DIA-${year}-${formattedSeq}`;
+      diasporaId = `NIG-DIA-${formattedSeq}`;
     }
 
     // Construct Member object
