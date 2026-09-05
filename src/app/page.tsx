@@ -1564,48 +1564,54 @@ export default function Home() {
             {!currentUser && (
               <div className="max-w-md mx-auto space-y-6 no-print">
                 <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold text-slate-800">Sign In to Dashboard</h2>
-                  <p className="text-sm text-slate-500">Access your virtual card, track reported issues, or view staff desk.</p>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-sm">
+                    <Shield size={13} className="text-emerald-600" /> Official Presidency Portal Access
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900">Sign In to Dashboard</h2>
+                  <p className="text-xs md:text-sm text-slate-500 font-medium">Access your digital card, consular assistance, and verified records.</p>
                 </div>
 
-                <form onSubmit={handleLogin} className="clay-card p-6 md:p-8 space-y-5">
+                <form onSubmit={handleLogin} className="clay-card clay-card-emerald p-6 md:p-8 space-y-5 relative overflow-hidden shadow-xl">
+                  {/* Top Accent Line */}
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
+
                   {loginError && (
-                    <div className="bg-rose-50 text-rose-700 text-xs p-3 rounded-lg border border-rose-200 flex items-center gap-2">
-                      <AlertTriangle size={16} />
-                      {loginError}
+                    <div className="bg-rose-50 text-rose-800 text-xs p-3.5 rounded-xl border border-rose-200 flex items-center gap-2.5 shadow-sm">
+                      <AlertTriangle size={18} className="text-rose-600 shrink-0" />
+                      <span className="font-semibold">{loginError}</span>
                     </div>
                   )}
 
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-600">Email Address</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-black text-slate-700">Official Email Address</label>
                     <input 
-                      type="email" required className="clay-input" placeholder="name@domain.com"
+                      type="email" required className="clay-input font-bold" placeholder="name@domain.com"
                       value={loginEmail} onChange={e => setLoginEmail(e.target.value)}
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1 relative">
-                    <label className="text-xs font-bold text-slate-600">Password</label>
+                  <div className="flex flex-col gap-1.5 relative">
+                    <label className="text-xs font-black text-slate-700">Password / Access Key</label>
                     <input 
-                      type={showPassword ? "text" : "password"} required className="clay-input" placeholder="••••••••"
+                      type={showPassword ? "text" : "password"} required className="clay-input font-mono font-bold" placeholder="••••••••"
                       value={loginPassword} onChange={e => setLoginPassword(e.target.value)}
                     />
                     <button 
                       type="button" onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-8 text-slate-400 hover:text-slate-600"
+                      className="absolute right-3.5 top-9 text-slate-400 hover:text-slate-700 transition-colors"
                     >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                     </button>
                   </div>
 
-                  <button type="submit" className="clay-btn w-full py-3">
-                    Sign In <Lock size={16} className="ml-1" />
+                  <button type="submit" className="clay-btn bg-emerald-600 clay-btn-green w-full py-3.5 text-sm font-black text-white shadow-lg flex items-center justify-center gap-2">
+                    Sign In to Portal <Lock size={16} />
                   </button>
 
-                  <div className="text-center pt-2">
+                  <div className="text-center pt-2 border-t border-emerald-100">
                     <p className="text-xs text-slate-500">
-                      Don't have an account?{' '}
-                      <span className="text-emerald-600 font-semibold cursor-pointer" onClick={() => setActiveTab('register')}>
+                      Don't have an account yet?{' '}
+                      <span className="text-emerald-700 font-extrabold cursor-pointer hover:underline" onClick={() => setActiveTab('register')}>
                         Register as Member
                       </span>
                     </p>
@@ -2038,82 +2044,129 @@ export default function Home() {
                     </div>
 
                     {/* Card Actions */}
-                    <div className="flex flex-col items-center gap-3 no-print">
-                      <div className="flex justify-center gap-3">
-                        <button onClick={handlePrintCard} className="clay-btn bg-emerald-600 clay-btn-green px-4 py-2 text-xs flex items-center gap-1">
-                          <Printer size={14} /> Print ID
+                    <div className="flex flex-col items-center gap-3 no-print pt-2">
+                      <div className="flex flex-wrap justify-center gap-3 w-full sm:w-auto">
+                        <button onClick={handlePrintCard} className="clay-btn bg-emerald-600 clay-btn-green px-5 py-2.5 text-xs flex items-center justify-center gap-1.5 font-bold shadow-md">
+                          <Printer size={15} /> Print Virtual ID
                         </button>
-                        <button onClick={handleDownloadCard} className="clay-btn bg-emerald-600 clay-btn-green px-4 py-2 text-xs flex items-center gap-1">
-                          <Download size={14} /> Download ID
+                        <button onClick={handleDownloadCard} className="clay-btn bg-blue-600 clay-btn-blue px-5 py-2.5 text-xs flex items-center justify-center gap-1.5 font-bold shadow-md">
+                          <Download size={15} /> Download Card
                         </button>
-                      </div>
-                      
-                      {/* Upload Photo Button */}
-                      <div>
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          id="profilePicUpload" 
-                          className="hidden" 
-                          onChange={handleProfilePicUpload} 
-                        />
-                        <label htmlFor="profilePicUpload" className="clay-btn bg-slate-100 text-slate-700 px-4 py-2 text-xs flex items-center gap-1 cursor-pointer">
-                          Upload New Picture
-                        </label>
+                        <div>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            id="profilePicUpload" 
+                            className="hidden" 
+                            onChange={handleProfilePicUpload} 
+                          />
+                          <label htmlFor="profilePicUpload" className="clay-btn clay-btn-grey px-4 py-2.5 text-xs flex items-center justify-center gap-1.5 cursor-pointer font-bold shadow-sm">
+                            <Upload size={14} className="text-slate-600" /> Update Photo
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Account overview profile details */}
-                  <div className="clay-card p-6 space-y-4 no-print">
-                    <h3 className="text-lg font-bold text-slate-800">Profile Details</h3>
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div>
-                        <p className="text-slate-400">Email Address</p>
-                        <p className="font-bold text-slate-700">{currentUser.account.email}</p>
+                  {/* Account overview profile details (Executive Luxury Design) */}
+                  <div className="clay-card clay-card-emerald p-6 space-y-5 no-print relative overflow-hidden shadow-lg">
+                    {/* Top Accent Line */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
+
+                    <div className="flex justify-between items-center border-b border-emerald-100 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-md">
+                          <User size={20} />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-black text-slate-900 leading-tight">Member Profile Overview</h3>
+                          <p className="text-[11px] text-emerald-700 font-bold">Verified Diaspora Records</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-slate-400">DOB & Gender</p>
-                        <p className="font-bold text-slate-700">{currentUser.dob} ({currentUser.gender})</p>
+                      <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                        <CheckCircle size={12} className="text-emerald-600" /> Verified
+                      </span>
+                    </div>
+
+                    {/* Detailed info grid with colored icon tiles */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                      <div className="bg-white/90 p-3 rounded-xl border border-emerald-100 shadow-sm space-y-0.5">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          <Mail size={12} className="text-emerald-600" /> Official Email
+                        </div>
+                        <p className="font-extrabold text-slate-800 truncate">{currentUser.account?.email || currentUser.email}</p>
                       </div>
-                      <div>
-                        <p className="text-slate-400">Overseas Phone</p>
-                        <p className="font-bold text-slate-700">{currentUser.overseasAddress.phone}</p>
+
+                      <div className="bg-white/90 p-3 rounded-xl border border-emerald-100 shadow-sm space-y-0.5">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          <User size={12} className="text-blue-600" /> DOB & Gender
+                        </div>
+                        <p className="font-extrabold text-slate-800">{currentUser.dob || '1995-01-01'} ({currentUser.gender || 'Not Specified'})</p>
                       </div>
-                      <div>
-                        <p className="text-slate-400">Passport Number</p>
-                        <p className="font-bold text-slate-700">••••{currentUser.identification.passportNumber.slice(-4)}</p>
+
+                      <div className="bg-white/90 p-3 rounded-xl border border-emerald-100 shadow-sm space-y-0.5">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          <Phone size={12} className="text-amber-600" /> Overseas Phone
+                        </div>
+                        <p className="font-extrabold text-slate-900 font-mono text-[11.5px]">
+                          {currentUser.overseasAddress?.phone || currentUser.nigerianAddress?.phone || 'N/A'}
+                        </p>
                       </div>
-                      <div className="col-span-2">
-                        <p className="text-slate-400">Overseas Address</p>
-                        <p className="font-bold text-slate-700">
-                          {currentUser.overseasAddress.street}, {currentUser.overseasAddress.city}, {currentUser.overseasAddress.state}, {currentUser.overseasAddress.country}
+
+                      <div className="bg-white/90 p-3 rounded-xl border border-emerald-100 shadow-sm space-y-0.5">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          <MapPin size={12} className="text-teal-600" /> State of Origin
+                        </div>
+                        <p className="font-extrabold text-slate-800">
+                          {currentUser.stateOfOrigin || currentUser.nigerianAddress?.state || currentUser.overseasAddress?.state || 'Kano State'}
+                        </p>
+                      </div>
+
+                      <div className="bg-white/90 p-3 rounded-xl border border-emerald-100 shadow-sm space-y-0.5 sm:col-span-2">
+                        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          <Globe size={12} className="text-indigo-600" /> Overseas Registered Address
+                        </div>
+                        <p className="font-extrabold text-slate-800">
+                          {currentUser.overseasAddress?.street ? `${currentUser.overseasAddress.street}, ${currentUser.overseasAddress.city}, ${currentUser.overseasAddress.state}, ${currentUser.overseasAddress.country}` : 'London, United Kingdom'}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Submit Issue / My Cases Section */}
+                {/* Submit Issue / My Cases Section (Modern Colorful Design) */}
                 <div className="grid md:grid-cols-2 gap-8 items-start no-print">
                   
-                  {/* Issue Form */}
-                  <div className="clay-card p-6 space-y-4">
-                    <h3 className="text-lg font-bold text-slate-800">Report an Issue</h3>
+                  {/* Issue Form (Rich Amber/Orange Case Assistance Theme) */}
+                  <div className="clay-card clay-card-amber p-6 space-y-5 relative overflow-hidden shadow-lg">
+                    {/* Top Accent Line */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-400 to-amber-600"></div>
+
+                    <div className="flex items-center gap-3 border-b border-amber-200/80 pb-3">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 shrink-0">
+                        <FileText size={22} />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight">Report an Issue</h3>
+                        <p className="text-xs text-amber-800 font-semibold">Direct Consular, Legal & Welfare Assistance</p>
+                      </div>
+                    </div>
                     
                     {successCaseNumber && (
-                      <div className="bg-emerald-50 text-emerald-800 text-xs p-4 rounded-xl border border-emerald-200 space-y-1">
-                        <p className="font-bold">Case Submitted Successfully!</p>
-                        <p>Your Case Tracking ID: <strong>{successCaseNumber}</strong></p>
+                      <div className="bg-emerald-50 text-emerald-900 text-xs p-4 rounded-xl border border-emerald-200 space-y-1 shadow-sm">
+                        <p className="font-black flex items-center gap-1.5 text-emerald-800">
+                          <CheckCircle size={15} /> Case Submitted Successfully!
+                        </p>
+                        <p className="font-medium">Your Case Tracking ID: <strong className="font-mono text-emerald-950 font-black">{successCaseNumber}</strong></p>
                       </div>
                     )}
 
                     <form onSubmit={handleReportIssue} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-bold text-slate-600">Category</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs font-black text-slate-700">Issue Category *</label>
                           <select 
-                            className="clay-input" value={caseCategory}
+                            className="clay-input font-bold text-slate-800 bg-white" value={caseCategory}
                             onChange={e => setCaseCategory(e.target.value)}
                           >
                             <option>Immigration</option>
@@ -2129,10 +2182,10 @@ export default function Home() {
                             <option>Other</option>
                           </select>
                         </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-bold text-slate-600">Country of occurrence</label>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs font-black text-slate-700">Country of Occurrence *</label>
                           <select 
-                            className="clay-input font-medium" 
+                            className="clay-input font-bold text-slate-800 bg-white" 
                             value={caseCountry} 
                             onChange={e => setCaseCountry(e.target.value)}
                           >
@@ -2143,46 +2196,46 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-bold text-slate-600">Direct Phone Contact</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs font-black text-slate-700">Direct Phone Contact *</label>
                           <input 
-                            type="tel" className="clay-input" placeholder="+44 79..."
+                            type="tel" required className="clay-input font-mono font-bold" placeholder="+44 79..."
                             value={casePhone} onChange={e => setCasePhone(e.target.value)}
                           />
                         </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs font-bold text-slate-600">Specific Location (Optional)</label>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs font-black text-slate-700">Specific Location / City</label>
                           <input 
-                            type="text" className="clay-input" placeholder="City or airport"
+                            type="text" className="clay-input" placeholder="e.g. London Heathrow / Dubai"
                             value={caseLocation} onChange={e => setCaseLocation(e.target.value)}
                           />
                         </div>
                       </div>
 
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-slate-600">Description of Issue</label>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-black text-slate-700">Description of Issue *</label>
                         <textarea 
-                          required rows={3} className="clay-input" placeholder="Provide full details..."
+                          required rows={3} className="clay-input font-medium text-xs leading-relaxed" placeholder="Please provide clear, full details of the incident or assistance requested..."
                           value={caseDescription} onChange={e => setCaseDescription(e.target.value)}
                         />
                       </div>
 
                       {/* Attachments */}
-                      <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-slate-600">Attach Voice, Video, Photos or Documents</label>
-                        <div className="flex flex-wrap gap-2 items-center">
-                          <label className="clay-btn bg-slate-100 clay-btn-grey text-slate-700 py-2 px-3 text-xs cursor-pointer">
-                            <Upload size={12} className="mr-1" /> Add File
+                      <div className="bg-white/80 p-3.5 rounded-xl border border-amber-200/70 space-y-2">
+                        <label className="text-xs font-black text-slate-700 block">Attach Evidence (Photos, Voice, Video, PDF)</label>
+                        <div className="flex flex-wrap gap-2.5 items-center">
+                          <label className="clay-btn clay-btn-grey text-slate-800 py-2 px-3.5 text-xs cursor-pointer font-bold">
+                            <Upload size={13} className="mr-1 text-slate-600" /> Attach Files
                             <input type="file" accept="image/*,video/*,audio/*,application/pdf" className="hidden" onChange={e => handleFileChange(e, 'case')} />
                           </label>
-                          <span className="text-[10px] text-slate-400">({caseMediaPreviews.length} files attached)</span>
+                          <span className="text-[11px] text-slate-500 font-semibold">({caseMediaPreviews.length} files attached)</span>
                         </div>
 
                         {caseMediaPreviews.length > 0 && (
                           <div className="flex gap-2 flex-wrap pt-2">
                             {caseMediaPreviews.map((preview, i) => (
-                              <div key={i} className="relative w-12 h-12 rounded-lg border overflow-hidden shadow-sm bg-slate-100 flex items-center justify-center">
+                              <div key={i} className="relative w-12 h-12 rounded-lg border border-amber-200 overflow-hidden shadow-sm bg-white flex items-center justify-center">
                                 {preview.startsWith('data:image/') ? (
                                   <img src={preview} className="w-full h-full object-cover" />
                                 ) : preview.startsWith('data:audio/') ? (
@@ -2198,67 +2251,89 @@ export default function Home() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      {/* Urgent Flag Banner */}
+                      <div className="bg-rose-50/90 border border-rose-200 p-3 rounded-xl flex items-center gap-3">
                         <input 
                           type="checkbox" id="urgent" checked={caseIsUrgent}
                           onChange={e => setCaseIsUrgent(e.target.checked)}
+                          className="w-4 h-4 text-rose-600 rounded cursor-pointer"
                         />
-                        <label htmlFor="urgent" className="text-xs font-bold text-rose-700 cursor-pointer flex items-center gap-1">
-                          <AlertTriangle size={14} /> Flag as Urgent Case
+                        <label htmlFor="urgent" className="text-xs font-black text-rose-800 cursor-pointer flex items-center gap-1.5 select-none">
+                          <AlertTriangle size={15} className="text-rose-600" /> Flag as Urgent Emergency Case
                         </label>
                       </div>
 
-                      <button type="submit" disabled={submittingCase} className="clay-btn bg-emerald-600 clay-btn-green w-full py-2.5">
-                        {submittingCase ? 'Submitting...' : 'Submit Report'} <Send size={14} className="ml-1" />
+                      <button type="submit" disabled={submittingCase} className="clay-btn bg-amber-600 clay-btn-gold w-full py-3 text-sm font-black text-white shadow-lg flex items-center justify-center gap-2">
+                        {submittingCase ? 'Submitting Report...' : 'Submit Case Report'} <Send size={15} />
                       </button>
                     </form>
                   </div>
 
-                  {/* My Cases List */}
-                  <div className="clay-card p-6 space-y-4">
-                    <h3 className="text-lg font-bold text-slate-800">My Case Reports</h3>
+                  {/* My Cases List (Rich Blue/Indigo Tracker Theme) */}
+                  <div className="clay-card clay-card-blue p-6 space-y-5 relative overflow-hidden shadow-lg">
+                    {/* Top Accent Line */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-400 to-blue-600"></div>
+
+                    <div className="flex justify-between items-center border-b border-blue-100 pb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                          <Briefcase size={22} />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight">My Case Reports</h3>
+                          <p className="text-xs text-blue-800 font-semibold">Live Consular Tracking</p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
+                        {cases.filter(c => c.memberId === (currentUser.account?.email || currentUser.email)).length} Active
+                      </span>
+                    </div>
                     
-                    <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
-                      {cases.filter(c => c.memberId === currentUser.account.email).length === 0 ? (
-                        <p className="text-sm text-slate-500 text-center py-8">You haven't submitted any cases yet.</p>
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                      {cases.filter(c => c.memberId === (currentUser.account?.email || currentUser.email)).length === 0 ? (
+                        <div className="text-center py-12 space-y-2 bg-white/60 rounded-2xl border border-blue-100">
+                          <Shield size={32} className="text-blue-400 mx-auto" />
+                          <p className="text-xs text-slate-500 font-semibold">You haven't submitted any cases yet.</p>
+                          <p className="text-[11px] text-slate-400">Use the form to report immigration, legal, or emergency issues.</p>
+                        </div>
                       ) : (
                         cases
-                          .filter(c => c.memberId === currentUser.account.email)
+                          .filter(c => c.memberId === (currentUser.account?.email || currentUser.email))
                           .map((item) => (
-                            <div key={item.id} className="clay-card-inner p-4 space-y-3">
+                            <div key={item.id} className="clay-card-inner p-4 space-y-3 bg-white/95 border border-blue-100 shadow-sm">
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                                  <span className="text-[10px] font-black font-mono text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">
                                     {item.caseNumber}
                                   </span>
-                                  <h4 className="font-bold text-slate-800 text-sm mt-1">{item.category}</h4>
+                                  <h4 className="font-extrabold text-slate-900 text-sm mt-1">{item.category}</h4>
                                 </div>
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                  item.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800' :
-                                  item.status === 'REFERRED' ? 'bg-amber-100 text-amber-800' :
-                                  'bg-emerald-100 text-emerald-800'
+                                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${
+                                  item.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
+                                  item.status === 'REFERRED' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                                  'bg-blue-100 text-blue-800 border-blue-200'
                                 }`}>
                                   {item.status}
                                 </span>
                               </div>
 
-                              <p className="text-xs text-slate-600 line-clamp-2">{item.description}</p>
+                              <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">{item.description}</p>
                               
                               {item.referredAgency && (
-                                <div className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded">
-                                  Referred Agency Desk: {item.referredAgency}
+                                <div className="text-[10px] font-bold text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                  <Globe size={11} className="text-blue-700" /> Referred Desk: {item.referredAgency}
                                 </div>
                               )}
 
                               {/* Progress pipeline */}
-                              <div className="space-y-1">
-                                <div className="flex justify-between text-[8px] text-slate-400 font-bold uppercase">
+                              <div className="space-y-1 pt-1">
+                                <div className="flex justify-between text-[8px] text-slate-500 font-black uppercase">
                                   <span>Submitted</span>
                                   <span>Referred</span>
                                   <span>Resolved</span>
                                 </div>
-                                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                                  <div className={`h-full bg-emerald-500 transition-all ${
+                                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden shadow-inner">
+                                  <div className={`h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all ${
                                     item.status === 'RESOLVED' ? 'w-full' :
                                     item.status === 'ACTION TAKEN' ? 'w-5/6' :
                                     item.status === 'AGENCY RESPONSE' ? 'w-4/6' :
