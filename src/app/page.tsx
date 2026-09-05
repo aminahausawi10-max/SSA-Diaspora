@@ -767,9 +767,7 @@ export default function Home() {
       {/* HEADER */}
       <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-md border-b border-white/50 px-6 py-4 shadow-sm flex items-center justify-between no-print">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-lg">🇳🇬</span>
-          </div>
+          <img src="/presidency_seal.png" className="w-11 h-11 object-contain rounded-2xl shadow-sm p-0.5 bg-white border border-slate-200" alt="Presidency Seal" />
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-800">SSA DIASPORA</h1>
             <p className="text-xs text-emerald-600 font-semibold">Presidential Support Platform</p>
@@ -1710,12 +1708,9 @@ export default function Home() {
                         <div className="id-card-clay p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between min-h-[300px] text-slate-800 transition-all">
                           {/* Top Header */}
                           <div className="flex justify-between items-center border-b border-slate-200/60 pb-3">
-                            <div className="flex gap-2.5 items-center">
-                              <img src="/presidency_seal.png" className="w-10 h-10 object-contain rounded-full shadow-xs bg-white p-0.5 border border-emerald-100 shrink-0" alt="Presidency Seal" />
-                              <div>
-                                <h4 className="text-xs sm:text-sm font-black tracking-wider text-slate-900 leading-tight uppercase">DIASPORA MEMBERSHIP</h4>
-                                <p className="text-[9px] sm:text-[10px] text-emerald-700 font-extrabold uppercase tracking-tight">Official ID Card</p>
-                              </div>
+                            <div>
+                              <h4 className="text-xs sm:text-sm font-black tracking-wider text-slate-900 leading-tight uppercase">DIASPORA MEMBERSHIP</h4>
+                              <p className="text-[9px] sm:text-[10px] text-emerald-700 font-extrabold uppercase tracking-tight">Official ID Card</p>
                             </div>
                             <div className="text-right">
                               <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
@@ -1782,30 +1777,61 @@ export default function Home() {
                         /* The Back Card Container */
                         <div className="id-card-clay p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between min-h-[300px] text-slate-800 transition-all">
                           {/* Back Top Header */}
-                          <div className="flex items-center gap-2.5 border-b border-slate-200/60 pb-2.5">
-                            <img src="/presidency_seal.png" className="w-9 h-9 object-contain rounded-full shadow-xs bg-white p-0.5 border border-emerald-100 shrink-0" alt="Seal" />
+                          <div className="flex justify-between items-center border-b border-slate-200/60 pb-2.5">
                             <div>
                               <h4 className="text-xs font-black tracking-wider text-slate-900 leading-tight uppercase">FEDERAL REPUBLIC OF NIGERIA</h4>
                               <p className="text-[8.5px] text-emerald-700 font-extrabold uppercase tracking-tight">Diaspora Membership ID Card</p>
                             </div>
                           </div>
 
-                          {/* Emergency Contact Box */}
+                          {/* Emergency Contacts Box */}
                           <div className="my-auto space-y-2 py-1">
-                            <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 space-y-0.5 text-slate-800">
-                              <div className="flex items-center gap-1 text-emerald-800 font-bold text-[9px] uppercase tracking-wider mb-1">
-                                <PhoneCall size={11} className="text-emerald-700" /> Emergency Contact Details
+                            {/* Nigeria Emergency Contact if registered */}
+                            {(currentUser.emergencyContacts?.nigeria?.name || currentUser.emergencyContacts?.nigeria?.phone) && (
+                              <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 space-y-0.5 text-slate-800">
+                                <div className="flex items-center justify-between text-emerald-800 font-bold text-[9px] uppercase tracking-wider mb-0.5">
+                                  <span className="flex items-center gap-1"><PhoneCall size={11} className="text-emerald-700" /> Emergency Contact (Nigeria)</span>
+                                  {currentUser.emergencyContacts.nigeria.relationship && (
+                                    <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">{currentUser.emergencyContacts.nigeria.relationship}</span>
+                                  )}
+                                </div>
+                                <p className="text-xs font-bold text-slate-900 leading-tight">
+                                  {currentUser.emergencyContacts.nigeria.name || 'Not Provided'}
+                                </p>
+                                <p className="text-[10px] text-slate-600">
+                                  Phone: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.emergencyContacts.nigeria.phone || 'N/A'}</strong>
+                                </p>
                               </div>
-                              <p className="text-xs font-bold text-slate-900 leading-tight">
-                                {currentUser.emergencyContacts?.overseas?.name || currentUser.emergencyContacts?.nigeria?.name || 'Emergency Contact'}
-                              </p>
-                              <p className="text-[10px] text-slate-600">
-                                Phone: <strong className="text-slate-900 font-bold">{currentUser.emergencyContacts?.overseas?.phone || currentUser.emergencyContacts?.nigeria?.phone || 'N/A'}</strong>
-                              </p>
-                              <p className="text-[9px] text-slate-500">
-                                Relationship: <span className="font-semibold text-slate-700">{currentUser.emergencyContacts?.overseas?.relationship || currentUser.emergencyContacts?.nigeria?.relationship || 'Next of Kin'}</span>
-                              </p>
-                            </div>
+                            )}
+
+                            {/* Overseas Emergency Contact if registered */}
+                            {(currentUser.emergencyContacts?.overseas?.name || currentUser.emergencyContacts?.overseas?.phone) && (
+                              <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 space-y-0.5 text-slate-800">
+                                <div className="flex items-center justify-between text-emerald-800 font-bold text-[9px] uppercase tracking-wider mb-0.5">
+                                  <span className="flex items-center gap-1"><PhoneCall size={11} className="text-emerald-700" /> Emergency Contact (Overseas)</span>
+                                  {currentUser.emergencyContacts.overseas.relationship && (
+                                    <span className="text-[8.5px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">{currentUser.emergencyContacts.overseas.relationship}</span>
+                                  )}
+                                </div>
+                                <p className="text-xs font-bold text-slate-900 leading-tight">
+                                  {currentUser.emergencyContacts.overseas.name || 'Not Provided'}
+                                </p>
+                                <p className="text-[10px] text-slate-600">
+                                  Phone: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.emergencyContacts.overseas.phone || 'N/A'}</strong>
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Fallback if neither was registered */}
+                            {(!currentUser.emergencyContacts?.nigeria?.name && !currentUser.emergencyContacts?.nigeria?.phone && !currentUser.emergencyContacts?.overseas?.name && !currentUser.emergencyContacts?.overseas?.phone) && (
+                              <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 text-slate-800">
+                                <p className="text-[9px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1 mb-1">
+                                  <PhoneCall size={11} className="text-emerald-700" /> Emergency Contact
+                                </p>
+                                <p className="text-xs font-bold text-slate-900">Registered Contact</p>
+                                <p className="text-[10px] text-slate-600">Phone: <strong className="text-slate-900 font-bold font-mono">None registered</strong></p>
+                              </div>
+                            )}
 
                             {/* Office Helpline & Notice */}
                             <div className="bg-slate-50/90 border border-slate-200/80 rounded-xl p-2.5 space-y-1">
@@ -1833,12 +1859,9 @@ export default function Home() {
                       {/* Front for Print */}
                       <div className="id-card-clay id-card-print-wrap p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between h-72 text-slate-800">
                         <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                          <div className="flex gap-2 items-center">
-                            <img src="/presidency_seal.png" className="w-9 h-9 object-contain rounded-full" alt="Seal" />
-                            <div>
-                              <h4 className="text-xs font-black tracking-wider text-slate-900 leading-tight uppercase">DIASPORA MEMBERSHIP</h4>
-                              <p className="text-[9px] text-emerald-700 font-extrabold uppercase tracking-tight">Official ID Card</p>
-                            </div>
+                          <div>
+                            <h4 className="text-xs font-black tracking-wider text-slate-900 leading-tight uppercase">DIASPORA MEMBERSHIP</h4>
+                            <p className="text-[9px] text-emerald-700 font-extrabold uppercase tracking-tight">Official ID Card</p>
                           </div>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                             {currentUser.status}
@@ -1871,19 +1894,27 @@ export default function Home() {
 
                       {/* Back for Print */}
                       <div className="id-card-clay id-card-print-wrap p-6 max-w-md mx-auto relative overflow-hidden flex flex-col justify-between h-72 text-slate-800">
-                        <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                          <img src="/presidency_seal.png" className="w-8 h-8 object-contain rounded-full" alt="Seal" />
+                        <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                           <div>
                             <h4 className="text-xs font-black tracking-wider text-slate-900 leading-tight uppercase">FEDERAL REPUBLIC OF NIGERIA</h4>
                             <p className="text-[8px] text-emerald-700 font-extrabold uppercase">Diaspora Membership ID Card</p>
                           </div>
                         </div>
                         <div className="space-y-2 my-auto">
-                          <div className="border border-emerald-200 bg-emerald-50/50 p-2 rounded text-[10px]">
-                            <p className="font-bold text-emerald-800 text-[9px] uppercase">Emergency Contact</p>
-                            <p className="font-bold text-slate-900">{currentUser.emergencyContacts?.overseas?.name || currentUser.emergencyContacts?.nigeria?.name || 'Emergency Contact'}</p>
-                            <p>Phone: <strong>{currentUser.emergencyContacts?.overseas?.phone || currentUser.emergencyContacts?.nigeria?.phone || 'N/A'}</strong></p>
-                          </div>
+                          {(currentUser.emergencyContacts?.nigeria?.name || currentUser.emergencyContacts?.nigeria?.phone) && (
+                            <div className="border border-emerald-200 bg-emerald-50/50 p-2 rounded text-[10px]">
+                              <p className="font-bold text-emerald-800 text-[9px] uppercase">Emergency Contact (Nigeria)</p>
+                              <p className="font-bold text-slate-900">{currentUser.emergencyContacts.nigeria.name}</p>
+                              <p>Phone: <strong>{currentUser.emergencyContacts.nigeria.phone}</strong></p>
+                            </div>
+                          )}
+                          {(currentUser.emergencyContacts?.overseas?.name || currentUser.emergencyContacts?.overseas?.phone) && (
+                            <div className="border border-emerald-200 bg-emerald-50/50 p-2 rounded text-[10px]">
+                              <p className="font-bold text-emerald-800 text-[9px] uppercase">Emergency Contact (Overseas)</p>
+                              <p className="font-bold text-slate-900">{currentUser.emergencyContacts.overseas.name}</p>
+                              <p>Phone: <strong>{currentUser.emergencyContacts.overseas.phone}</strong></p>
+                            </div>
+                          )}
                           <div className="border border-slate-200 bg-slate-50 p-2 rounded text-[10px]">
                             <p><strong>Office Contact:</strong> <span className="font-bold text-emerald-700 font-mono">07047000070</span></p>
                             <p className="text-[8px] text-slate-500 pt-1">If found, please return to the nearest Nigerian Embassy, High Commission, or call 07047000070.</p>
