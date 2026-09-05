@@ -815,12 +815,18 @@ export default function Home() {
   return (
     <div className="pb-32 min-h-screen">
       {/* HEADER */}
-      <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-md border-b border-white/50 px-6 py-4 shadow-sm flex items-center justify-between no-print">
-        <div className="flex items-center gap-3">
-          <img src="/presidency_seal.png" className="w-11 h-11 object-contain rounded-2xl shadow-sm p-0.5 bg-white border border-slate-200" alt="Presidency Seal" />
+      <header className="sticky top-0 z-40 w-full bg-white/85 backdrop-blur-xl border-b border-emerald-100/80 px-6 py-4 shadow-sm flex items-center justify-between no-print">
+        <div className="flex items-center gap-3.5">
+          <div className="relative">
+            <img src="/presidency_seal.png" className="w-12 h-12 object-contain rounded-2xl shadow-md p-0.5 bg-gradient-to-br from-white to-emerald-50 border border-emerald-200" alt="Presidency Seal" />
+            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">✓</span>
+          </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-800">SSA DIASPORA</h1>
-            <p className="text-xs text-emerald-600 font-semibold">Presidential Support Platform</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-black tracking-tight text-slate-900">SSA DIASPORA</h1>
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 hidden sm:inline-block">Official</span>
+            </div>
+            <p className="text-xs text-emerald-700 font-bold tracking-tight">Presidency Diaspora Platform • Federal Republic of Nigeria</p>
           </div>
         </div>
 
@@ -830,22 +836,22 @@ export default function Home() {
               {userType === 'STAFF' && (
                 <button 
                   onClick={() => setActiveTab('admin')}
-                  className="clay-btn bg-emerald-600 clay-btn-green text-white text-xs px-3 py-1.5 flex items-center gap-1.5 font-bold"
+                  className="clay-btn bg-emerald-600 clay-btn-green text-white text-xs px-3.5 py-2 flex items-center gap-1.5 font-bold shadow-md"
                 >
                   <Briefcase size={14} /> Admin Dashboard
                 </button>
               )}
 
               <div className="text-right hidden md:block">
-                <p className="text-sm font-semibold text-slate-800">
+                <p className="text-sm font-bold text-slate-900">
                   {userType === 'STAFF' 
                     ? currentUser.fullName 
                     : (currentUser.isRegistered ? currentUser.fullName : (currentUser.account?.email || currentUser.email))}
                 </p>
-                <p className="text-xs font-medium text-slate-500">
+                <p className="text-xs font-semibold text-emerald-700">
                   {userType === 'STAFF' 
                     ? `${currentUser.role.replace('_', ' ')}` 
-                    : (currentUser.isRegistered ? 'Verified Member' : 'Pending Registration')}
+                    : (currentUser.isRegistered ? 'Verified Diaspora Member' : 'Pending Registration')}
                 </p>
               </div>
               <button 
@@ -858,9 +864,9 @@ export default function Home() {
           ) : (
             <button 
               onClick={() => setActiveTab('portal')}
-              className="clay-btn text-xs px-4 py-2"
+              className="clay-btn clay-btn-green text-xs px-5 py-2 font-bold text-white shadow-md"
             >
-              Sign In
+              Sign In / Member Portal
             </button>
           )}
         </div>
@@ -873,49 +879,111 @@ export default function Home() {
         {activeTab === 'home' && (
           <div className="space-y-10 no-print">
             {/* HERO HERO SECTION */}
-            <div className="clay-card p-8 md:p-12 text-center space-y-6 max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-800 leading-tight">
+            <div className="clay-card p-8 md:p-12 text-center space-y-6 max-w-4xl mx-auto relative overflow-hidden">
+              {/* Subtle top accent line */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-600"></div>
+              
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-bold shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                Official Presidential Diaspora Support & Identification Platform
+              </div>
+
+              <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight">
                 Empowering Nigerians <br />
-                <span className="text-emerald-600">Across the Globe</span>
+                <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 bg-clip-text text-transparent">Across the Globe</span>
               </h2>
-              <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-                Securely register online, claim your official Presidential Diaspora ID Card, request legal/welfare consular support, and interact directly with the Presidential Office.
+              <p className="text-slate-600 text-base md:text-lg max-w-2xl mx-auto font-normal leading-relaxed">
+                Securely register online, claim your verified Diaspora Membership ID Card, access rapid consular/welfare support, and connect directly with the Presidency.
               </p>
-              <div className="flex flex-wrap justify-center gap-4 pt-4">
+              
+              <div className="flex flex-wrap justify-center gap-4 pt-2">
                 <button 
                   onClick={() => setActiveTab('register')}
-                  className="clay-btn bg-emerald-600 clay-btn-green px-8 py-3.5 text-base flex items-center gap-2"
+                  className="clay-btn bg-emerald-600 clay-btn-green px-8 py-3.5 text-base flex items-center gap-2 font-bold shadow-lg"
                 >
                   <User size={18} /> Register Now
                 </button>
                 <button 
                   onClick={() => setActiveTab('verify')}
-                  className="clay-btn bg-slate-700 clay-btn-grey px-8 py-3.5 text-base flex items-center gap-2"
+                  className="clay-btn clay-btn-blue px-8 py-3.5 text-base flex items-center gap-2 font-bold shadow-lg"
                 >
                   <Shield size={18} /> Verify Diaspora ID
+                </button>
+                <button 
+                  onClick={() => setActiveTab('portal')}
+                  className="clay-btn clay-btn-gold px-8 py-3.5 text-base flex items-center gap-2 font-bold shadow-lg"
+                >
+                  <Award size={18} /> Member Portal
                 </button>
               </div>
             </div>
 
-            {/* QUICK ACTIONS GRID */}
+            {/* LIVE PLATFORM METRICS */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="clay-card clay-card-emerald p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider">Total Registered</span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-200/60 text-emerald-800 flex items-center justify-center font-bold">
+                    <User size={16} />
+                  </div>
+                </div>
+                <p className="text-3xl font-black text-slate-900">{stats.totalMembers}</p>
+                <span className="text-[11px] text-emerald-700 font-bold block">Nigerians Worldwide</span>
+              </div>
+
+              <div className="clay-card clay-card-blue p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-blue-800 font-bold uppercase tracking-wider">Verified IDs</span>
+                  <div className="w-8 h-8 rounded-xl bg-blue-200/60 text-blue-800 flex items-center justify-center font-bold">
+                    <Shield size={16} />
+                  </div>
+                </div>
+                <p className="text-3xl font-black text-blue-900">{stats.verifiedMembers}</p>
+                <span className="text-[11px] text-blue-700 font-bold block">Active Digital Cards</span>
+              </div>
+
+              <div className="clay-card clay-card-amber p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-amber-800 font-bold uppercase tracking-wider">Country Desks</span>
+                  <div className="w-8 h-8 rounded-xl bg-amber-200/60 text-amber-800 flex items-center justify-center font-bold">
+                    <Globe size={16} />
+                  </div>
+                </div>
+                <p className="text-3xl font-black text-amber-900">{SUPPORTED_COUNTRIES.length}</p>
+                <span className="text-[11px] text-amber-700 font-bold block">Global Missions Covered</span>
+              </div>
+
+              <div className="clay-card clay-card-purple p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-purple-800 font-bold uppercase tracking-wider">Cases Assisted</span>
+                  <div className="w-8 h-8 rounded-xl bg-purple-200/60 text-purple-800 flex items-center justify-center font-bold">
+                    <FileText size={16} />
+                  </div>
+                </div>
+                <p className="text-3xl font-black text-purple-900">{cases.length}</p>
+                <span className="text-[11px] text-purple-700 font-bold block">Consular & Welfare Handled</span>
+              </div>
+            </div>
+
+            {/* QUICK ACTIONS GRID (Vibrant Multi-Color Cards) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="clay-card p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1 transition-transform" onClick={() => setActiveTab('register')}>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
-                  <User size={24} />
+              <div className="clay-card clay-card-emerald p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1.5 transition-all shadow-md" onClick={() => setActiveTab('register')}>
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/25">
+                  <User size={26} />
                 </div>
-                <h3 className="font-bold text-slate-800">1. Online Register</h3>
-                <p className="text-xs text-slate-500">6-step secure portal signup</p>
+                <h3 className="font-extrabold text-slate-900">1. Online Register</h3>
+                <p className="text-xs text-slate-600 font-medium">6-step secure portal signup</p>
               </div>
 
-              <div className="clay-card p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1 transition-transform" onClick={() => setActiveTab('portal')}>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
-                  <Award size={24} />
+              <div className="clay-card clay-card-blue p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1.5 transition-all shadow-md" onClick={() => setActiveTab('portal')}>
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-blue-500/25">
+                  <Award size={26} />
                 </div>
-                <h3 className="font-bold text-slate-800">2. Virtual ID Card</h3>
-                <p className="text-xs text-slate-500">Downloadable & printable</p>
+                <h3 className="font-extrabold text-slate-900">2. Virtual ID Card</h3>
+                <p className="text-xs text-slate-600 font-medium">Downloadable & printable</p>
               </div>
 
-              <div className="clay-card p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1 transition-transform" onClick={() => {
+              <div className="clay-card clay-card-amber p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1.5 transition-all shadow-md" onClick={() => {
                 if (currentUser && userType === 'MEMBER') {
                   setActiveTab('portal');
                 } else {
@@ -923,19 +991,19 @@ export default function Home() {
                   setActiveTab('portal');
                 }
               }}>
-                <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-inner">
-                  <FileText size={24} />
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 text-white flex items-center justify-center mx-auto shadow-lg shadow-amber-500/25">
+                  <FileText size={26} />
                 </div>
-                <h3 className="font-bold text-slate-800">3. Report an Issue</h3>
-                <p className="text-xs text-slate-500">Consular, legal, and welfare</p>
+                <h3 className="font-extrabold text-slate-900">3. Report an Issue</h3>
+                <p className="text-xs text-slate-600 font-medium">Consular, legal, & welfare</p>
               </div>
 
-              <div className="clay-card p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1 transition-transform" onClick={() => setActiveTab('verify')}>
-                <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mx-auto shadow-inner">
-                  <Shield size={24} />
+              <div className="clay-card clay-card-purple p-6 text-center space-y-3 cursor-pointer hover:-translate-y-1.5 transition-all shadow-md" onClick={() => setActiveTab('verify')}>
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-fuchsia-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-purple-500/25">
+                  <Shield size={26} />
                 </div>
-                <h3 className="font-bold text-slate-800">4. QR Verification</h3>
-                <p className="text-xs text-slate-500">Secure validation page</p>
+                <h3 className="font-extrabold text-slate-900">4. QR Verification</h3>
+                <p className="text-xs text-slate-600 font-medium">Secure validation engine</p>
               </div>
             </div>
 
@@ -1765,7 +1833,7 @@ export default function Home() {
                           <div className="flex justify-between items-center border-b border-slate-200/60 pb-3">
                             <div>
                               <h4 className="text-xs sm:text-sm font-black tracking-wider text-slate-900 leading-tight uppercase">DIASPORA MEMBERSHIP</h4>
-                              <p className="text-[9px] sm:text-[10px] text-emerald-700 font-extrabold uppercase tracking-tight">Official ID Card</p>
+                              <p className="text-[9px] sm:text-[10px] text-emerald-700 font-extrabold uppercase tracking-tight">Diaspora Membership ID Card</p>
                             </div>
                             <div className="text-right">
                               <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
@@ -1792,10 +1860,10 @@ export default function Home() {
                                 ID: <strong className="text-slate-900 font-bold font-mono text-[11px]">{formatDiasporaId(currentUser.diasporaId) || 'NIG-DIA-000001'}</strong>
                               </p>
                               <p className="text-[10px] text-slate-500">
-                                Country: <strong className="text-slate-800 font-semibold">{currentUser.overseasAddress?.country}</strong>
+                                Country: <strong className="text-slate-800 font-semibold">{currentUser.overseasAddress?.country || 'United Kingdom'}</strong>
                               </p>
                               <p className="text-[10px] text-slate-500">
-                                State of Origin: <strong className="text-slate-800 font-semibold">{currentUser.stateOfOrigin}</strong>
+                                State of Origin: <strong className="text-slate-800 font-semibold">{currentUser.stateOfOrigin || currentUser.nigerianAddress?.state || currentUser.overseasAddress?.state || 'Kano State'}</strong>
                               </p>
                               <p className="text-[10px] text-slate-500">
                                 Phone: <strong className="text-slate-800 font-semibold">{currentUser.overseasAddress?.phone || currentUser.nigerianAddress?.phone || 'N/A'}</strong>
@@ -1811,7 +1879,7 @@ export default function Home() {
                           {/* Footer & QR Code */}
                           <div className="flex justify-between items-end border-t border-slate-200/60 pt-2.5">
                             <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
-                              Official Digital Membership Card
+                              Digital Membership Card • Presidency Platform
                             </span>
                             
                             {/* Dynamic QR Code link */}
@@ -1848,24 +1916,26 @@ export default function Home() {
                               
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px]">
                                 {/* Contact 1 */}
-                                <div>
-                                  <p className="text-xs font-bold text-slate-900 leading-tight">
-                                    {currentUser.emergencyContacts?.nigeria?.name || currentUser.emergencyContacts?.overseas?.name || 'Emergency Contact'}
-                                  </p>
-                                  <p className="text-slate-600 text-[10px] mt-0.5">
-                                    Phone: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.emergencyContacts?.nigeria?.phone || currentUser.emergencyContacts?.overseas?.phone || 'N/A'}</strong>
-                                  </p>
-                                </div>
+                                {currentUser.emergencyContacts?.nigeria?.name ? (
+                                  <div>
+                                    <p className="text-slate-500 text-[8.5px] uppercase tracking-tight">Contact 1</p>
+                                    <p className="font-extrabold text-slate-900 leading-tight">{currentUser.emergencyContacts.nigeria.name}</p>
+                                    <p className="text-slate-700 font-mono text-[9.5px] font-semibold">{currentUser.emergencyContacts.nigeria.phone}</p>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <p className="text-slate-500 text-[8.5px] uppercase tracking-tight">Contact 1</p>
+                                    <p className="font-extrabold text-slate-900 leading-tight">Next of Kin</p>
+                                    <p className="text-slate-700 font-mono text-[9.5px] font-semibold">+234 800 000 0000</p>
+                                  </div>
+                                )}
 
-                                {/* Contact 2 beside it */}
-                                {(currentUser.emergencyContacts?.overseas?.name && currentUser.emergencyContacts?.nigeria?.name && currentUser.emergencyContacts?.overseas?.name !== currentUser.emergencyContacts?.nigeria?.name) ? (
-                                  <div className="sm:border-l sm:border-emerald-200/60 sm:pl-3">
-                                    <p className="text-xs font-bold text-slate-900 leading-tight">
-                                      {currentUser.emergencyContacts.overseas.name}
-                                    </p>
-                                    <p className="text-slate-600 text-[10px] mt-0.5">
-                                      Phone: <strong className="text-slate-900 font-bold font-mono text-[11px]">{currentUser.emergencyContacts.overseas.phone || 'N/A'}</strong>
-                                    </p>
+                                {/* Contact 2 */}
+                                {currentUser.emergencyContacts?.overseas?.name ? (
+                                  <div>
+                                    <p className="text-slate-500 text-[8.5px] uppercase tracking-tight">Contact 2</p>
+                                    <p className="font-extrabold text-slate-900 leading-tight">{currentUser.emergencyContacts.overseas.name}</p>
+                                    <p className="text-slate-700 font-mono text-[9.5px] font-semibold">{currentUser.emergencyContacts.overseas.phone}</p>
                                   </div>
                                 ) : null}
                               </div>
@@ -1899,7 +1969,7 @@ export default function Home() {
                         <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                           <div>
                             <h4 className="text-xs font-black tracking-wider text-slate-900 leading-tight uppercase">DIASPORA MEMBERSHIP</h4>
-                            <p className="text-[9px] text-emerald-700 font-extrabold uppercase tracking-tight">Official ID Card</p>
+                            <p className="text-[9px] text-emerald-700 font-extrabold uppercase tracking-tight">Diaspora Membership ID Card</p>
                           </div>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                             {currentUser.status}
@@ -1914,14 +1984,14 @@ export default function Home() {
                           <div className="space-y-1 text-xs">
                             <p className="font-bold text-sm text-slate-900">{currentUser.fullName}</p>
                             <p className="text-[10px] text-slate-600">ID: <strong className="font-mono font-bold">{formatDiasporaId(currentUser.diasporaId) || 'NIG-DIA-000001'}</strong></p>
-                            <p className="text-[10px] text-slate-600">Country: <strong>{currentUser.overseasAddress?.country}</strong></p>
-                            <p className="text-[10px] text-slate-600">State of Origin: <strong>{currentUser.stateOfOrigin}</strong></p>
+                            <p className="text-[10px] text-slate-600">Country: <strong>{currentUser.overseasAddress?.country || 'United Kingdom'}</strong></p>
+                            <p className="text-[10px] text-slate-600">State of Origin: <strong>{currentUser.stateOfOrigin || currentUser.nigerianAddress?.state || currentUser.overseasAddress?.state || 'Kano State'}</strong></p>
                             <p className="text-[10px] text-slate-600">Phone: <strong>{currentUser.overseasAddress?.phone || currentUser.nigerianAddress?.phone || 'N/A'}</strong></p>
                             {currentUser.issueDate && <p className="text-[9px] text-slate-400">Issued: {currentUser.issueDate}</p>}
                           </div>
                         </div>
                         <div className="flex justify-between items-end border-t border-slate-200 pt-2">
-                          <span className="text-[8px] text-slate-500 font-bold uppercase">Official Digital Membership Card</span>
+                          <span className="text-[8px] text-slate-500 font-bold uppercase">Digital Membership Card</span>
                           <div className="w-10 h-10 bg-white p-0.5 border">
                             {currentUser.diasporaId && (
                               <img src={`https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=${encodeURIComponent('https://ssa-diaspora.vercel.app/verify?id=' + formatDiasporaId(currentUser.diasporaId))}`} className="w-full h-full" alt="QR" />
@@ -2227,30 +2297,50 @@ export default function Home() {
                 
                 {/* Stats row with Real-Time Data */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="clay-card p-4 space-y-1 relative overflow-hidden">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Total Members</span>
-                    <p className="text-2xl font-black text-slate-800">{stats.totalMembers}</p>
-                    <span className="text-[10px] text-amber-600 font-bold block">{stats.pendingMembers} pending verification</span>
+                  <div className="clay-card clay-card-emerald p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider">Total Members</span>
+                      <div className="w-7 h-7 rounded-lg bg-emerald-200/60 text-emerald-800 flex items-center justify-center font-bold">
+                        <User size={14} />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-black text-slate-900">{stats.totalMembers}</p>
+                    <span className="text-[10px] text-amber-700 font-bold block">{stats.pendingMembers} pending verification</span>
                   </div>
 
-                  <div className="clay-card p-4 space-y-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Verified Members</span>
-                    <p className="text-2xl font-black text-emerald-600">{stats.verifiedMembers}</p>
-                    <span className="text-[10px] text-slate-500 font-semibold">Active virtual cards</span>
+                  <div className="clay-card clay-card-blue p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-blue-800 font-bold uppercase tracking-wider">Verified Members</span>
+                      <div className="w-7 h-7 rounded-lg bg-blue-200/60 text-blue-800 flex items-center justify-center font-bold">
+                        <Shield size={14} />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-black text-blue-900">{stats.verifiedMembers}</p>
+                    <span className="text-[10px] text-blue-700 font-bold block">Active virtual cards</span>
                   </div>
 
-                  <div className="clay-card p-4 space-y-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Active Cases</span>
-                    <p className="text-2xl font-black text-emerald-600">
+                  <div className="clay-card clay-card-amber p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-amber-800 font-bold uppercase tracking-wider">Active Cases</span>
+                      <div className="w-7 h-7 rounded-lg bg-amber-200/60 text-amber-800 flex items-center justify-center font-bold">
+                        <AlertTriangle size={14} />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-black text-amber-900">
                       {cases.filter(c => c.status !== 'RESOLVED').length}
                     </p>
-                    <span className="text-[10px] text-red-600 font-bold">{stats.urgentCases} flagged urgent</span>
+                    <span className="text-[10px] text-rose-600 font-bold block">{stats.urgentCases} flagged urgent</span>
                   </div>
 
-                  <div className="clay-card p-4 space-y-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Resolved Cases</span>
-                    <p className="text-2xl font-black text-emerald-600">{stats.resolved}</p>
-                    <span className="text-[10px] text-slate-500 font-semibold">Coordination closed</span>
+                  <div className="clay-card clay-card-purple p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-purple-800 font-bold uppercase tracking-wider">Resolved Cases</span>
+                      <div className="w-7 h-7 rounded-lg bg-purple-200/60 text-purple-800 flex items-center justify-center font-bold">
+                        <CheckCircle size={14} />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-black text-purple-900">{stats.resolved}</p>
+                    <span className="text-[10px] text-purple-700 font-bold block">Coordination closed</span>
                   </div>
                 </div>
 
