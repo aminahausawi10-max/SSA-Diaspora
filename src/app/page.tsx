@@ -297,6 +297,18 @@ export default function Home() {
       return;
     }
 
+    if (!regData.emergencyNgName?.trim() && !regData.emergencyOsName?.trim()) {
+      alert('Emergency Contact is compulsory. Please enter the full name of your emergency contact person.');
+      setRegStep(6);
+      return;
+    }
+
+    if (!regData.emergencyNgPhone?.trim() && !regData.emergencyOsPhone?.trim()) {
+      alert('Emergency Contact Phone Number is compulsory. Please provide their phone number.');
+      setRegStep(6);
+      return;
+    }
+
     setIsSubmittingReg(true);
     try {
       const res = await fetch('/api/auth/register', {
@@ -1248,77 +1260,91 @@ export default function Home() {
               {/* STEP 6: Emergency Contacts */}
               {regStep === 6 && (
                 <div className="space-y-5">
-                  <h3 className="font-bold text-slate-800 border-b pb-2">Step 6 — Emergency Contacts (Optional)</h3>
+                  <div className="border-b pb-2 flex flex-col sm:flex-row justify-between sm:items-center gap-1">
+                    <h3 className="font-bold text-slate-800">Step 6 — Emergency Contacts</h3>
+                    <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200 w-fit">
+                      * Compulsory / Required
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Please provide at least one active emergency contact person. This information is compulsory and is displayed on the back of your official Diaspora Membership ID Card.
+                  </p>
                   
                   {/* Contact 1 */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">Emergency Contact 1 — Nigeria (Optional)</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                    <h4 className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg flex items-center justify-between">
+                      <span>Emergency Contact 1 (Nigeria or Primary) *</span>
+                      <span className="text-[10px] text-emerald-700 font-semibold">Required</span>
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-slate-600">Full Name</label>
+                        <label className="text-xs font-bold text-slate-600">Full Name *</label>
                         <input 
-                          type="text" className="clay-input" placeholder="John Ade"
+                          type="text" required className="clay-input" placeholder="e.g. John Ade"
                           value={regData.emergencyNgName} onChange={e => setRegData({...regData, emergencyNgName: e.target.value})}
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-slate-600">Relationship</label>
+                        <label className="text-xs font-bold text-slate-600">Relationship *</label>
                         <input 
-                          type="text" className="clay-input" placeholder="Brother"
+                          type="text" required className="clay-input" placeholder="e.g. Brother / Sister / Spouse"
                           value={regData.emergencyNgRel} onChange={e => setRegData({...regData, emergencyNgRel: e.target.value})}
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-slate-600">Full Address</label>
+                        <label className="text-xs font-bold text-slate-600">Phone Number *</label>
                         <input 
-                          type="text" className="clay-input" placeholder="Ikeja, Lagos"
-                          value={regData.emergencyNgAddress} onChange={e => setRegData({...regData, emergencyNgAddress: e.target.value})}
+                          type="tel" required className="clay-input font-mono" placeholder="e.g. +234 801 234 5678"
+                          value={regData.emergencyNgPhone} onChange={e => setRegData({...regData, emergencyNgPhone: e.target.value})}
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-slate-600">Phone Number</label>
+                        <label className="text-xs font-bold text-slate-600">Full Address</label>
                         <input 
-                          type="tel" className="clay-input" placeholder="+234 80..."
-                          value={regData.emergencyNgPhone} onChange={e => setRegData({...regData, emergencyNgPhone: e.target.value})}
+                          type="text" className="clay-input" placeholder="e.g. Ikeja, Lagos"
+                          value={regData.emergencyNgAddress} onChange={e => setRegData({...regData, emergencyNgAddress: e.target.value})}
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Contact 2 */}
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg">Emergency Contact 2 — Country of Residence (Optional)</h4>
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3 pt-2 border-t border-slate-100">
+                    <h4 className="text-xs font-bold text-slate-700 bg-slate-50 px-2.5 py-1.5 rounded-lg flex items-center justify-between">
+                      <span>Emergency Contact 2 (Country of Residence / Overseas)</span>
+                      <span className="text-[10px] text-slate-500 font-normal">Optional</span>
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Full Name</label>
                         <input 
-                          type="text" className="clay-input" placeholder="Sarah Smith"
+                          type="text" className="clay-input" placeholder="e.g. Sarah Smith"
                           value={regData.emergencyOsName} onChange={e => setRegData({...regData, emergencyOsName: e.target.value})}
                         />
                       </div>
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Relationship</label>
                         <input 
-                          type="text" className="clay-input" placeholder="Spouse"
+                          type="text" className="clay-input" placeholder="e.g. Spouse / Colleague"
                           value={regData.emergencyOsRel} onChange={e => setRegData({...regData, emergencyOsRel: e.target.value})}
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs font-bold text-slate-600">Full Address</label>
-                        <input 
-                          type="text" className="clay-input" placeholder="London, UK"
-                          value={regData.emergencyOsAddress} onChange={e => setRegData({...regData, emergencyOsAddress: e.target.value})}
-                        />
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-slate-600">Phone Number</label>
                         <input 
-                          type="tel" className="clay-input" placeholder="+44 79..."
+                          type="tel" className="clay-input font-mono" placeholder="e.g. +44 791 234 5678"
                           value={regData.emergencyOsPhone} onChange={e => setRegData({...regData, emergencyOsPhone: e.target.value})}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-600">Full Address</label>
+                        <input 
+                          type="text" className="clay-input" placeholder="e.g. London, UK"
+                          value={regData.emergencyOsAddress} onChange={e => setRegData({...regData, emergencyOsAddress: e.target.value})}
                         />
                       </div>
                     </div>
@@ -1351,22 +1377,13 @@ export default function Home() {
                 )}
 
                 {regStep === 5 && (
-                  <div className="flex items-center gap-2">
-                    <button 
-                      type="button" onClick={() => setRegStep(6)}
-                      className="clay-btn clay-btn-grey px-4 py-2.5 text-xs flex items-center gap-1 text-slate-600"
-                      disabled={isSubmittingReg}
-                    >
-                      Add Emergency Contacts <ArrowRight size={13} />
-                    </button>
-                    <button 
-                      type="submit"
-                      disabled={isSubmittingReg}
-                      className="clay-btn clay-btn-green px-7 py-2.5 text-xs flex items-center gap-1 text-white font-bold"
-                    >
-                      {isSubmittingReg ? 'Submitting...' : 'Submit Registration'} <CheckCircle size={14} />
-                    </button>
-                  </div>
+                  <button 
+                    type="button" onClick={() => setRegStep(6)}
+                    className="clay-btn clay-btn-green px-6 py-2.5 text-xs flex items-center gap-1 text-white font-bold"
+                    disabled={isSubmittingReg}
+                  >
+                    Next: Emergency Contacts (Required) <ArrowRight size={14} />
+                  </button>
                 )}
 
                 {regStep === 6 && (
