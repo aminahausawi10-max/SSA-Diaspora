@@ -181,6 +181,11 @@ async function ensureNeonInitialized() {
             author VARCHAR(100) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
+          CREATE TABLE IF NOT EXISTS diaspora_settings (
+            key VARCHAR(100) PRIMARY KEY,
+            value JSONB NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
         `;
         isInitialized = true;
       } catch (error) {
@@ -457,11 +462,35 @@ export const db = {
   },
 
   async getStatsOffsets(): Promise<{ [key: string]: number }> {
+    if (sql) {
+      try {
+        await ensureNeonInitialized();
+        const rows: any = await sql`SELECT value FROM diaspora_settings WHERE key = 'stats_offsets'`;
+        if (rows && rows.length > 0) {
+          const val = rows[0].value;
+          return typeof val === 'string' ? JSON.parse(val) : val;
+        }
+      } catch (e) {
+        console.error('Neon getStatsOffsets error, falling back to local file:', e);
+      }
+    }
     const local = readLocalDb();
     return (local as any).offsets || {};
   },
 
   async saveStatsOffsets(offsets: { [key: string]: number }): Promise<{ [key: string]: number }> {
+    if (sql) {
+      try {
+        await ensureNeonInitialized();
+        await sql`
+          INSERT INTO diaspora_settings (key, value, updated_at)
+          VALUES ('stats_offsets', ${JSON.stringify(offsets)}::jsonb, CURRENT_TIMESTAMP)
+          ON CONFLICT (key) DO UPDATE SET value = ${JSON.stringify(offsets)}::jsonb, updated_at = CURRENT_TIMESTAMP
+        `;
+      } catch (e) {
+        console.error('Neon saveStatsOffsets error, falling back to local file:', e);
+      }
+    }
     const local = readLocalDb();
     (local as any).offsets = offsets;
     writeLocalDb(local);

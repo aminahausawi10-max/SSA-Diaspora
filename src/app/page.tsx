@@ -148,17 +148,27 @@ export default function Home() {
   // Load and refresh initial data
   const fetchData = async () => {
     try {
-      let currentOffsets = customOffsets;
+      let currentOffsets = { ...customOffsets };
+      const storedOffsets = typeof window !== 'undefined' ? localStorage.getItem('ssa_custom_offsets') : null;
+      if (storedOffsets) {
+        try {
+          currentOffsets = { ...currentOffsets, ...JSON.parse(storedOffsets) };
+        } catch (e) {}
+      }
+
       try {
         const resStats = await fetch('/api/stats');
         const dataStats = await resStats.json();
-        if (dataStats.success && dataStats.offsets) {
-          currentOffsets = { ...customOffsets, ...dataStats.offsets };
-          setCustomOffsets(currentOffsets);
-          localStorage.setItem('ssa_custom_offsets', JSON.stringify(currentOffsets));
+        if (dataStats.success && dataStats.offsets && Object.keys(dataStats.offsets).length > 0) {
+          currentOffsets = { ...currentOffsets, ...dataStats.offsets };
         }
       } catch (e) {
         console.warn('Could not fetch server stats offsets:', e);
+      }
+
+      setCustomOffsets(currentOffsets);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('ssa_custom_offsets', JSON.stringify(currentOffsets));
       }
 
       const resNews = await fetch('/api/news');
@@ -620,7 +630,7 @@ export default function Home() {
 
     const cat = manualAdjustment.category;
     const currentOffset = customOffsets[cat] || 0;
-    const newOffset = action === 'ADD' ? currentOffset + qty : currentOffset - qty;
+    const newOffset = action === 'ADD' ? currentOffset + qty : Math.max(0, currentOffset - qty);
 
     const updatedOffsets = {
       ...customOffsets,
@@ -641,7 +651,74 @@ export default function Home() {
       console.warn('Could not save offsets to server:', e);
     }
 
-    alert(`${action === 'ADD' ? 'Added' : 'Removed'} ${qty} from "${cat}". Total updated successfully.`);
+    alert(`${action === 'ADD' ? 'Added' : 'Removed'} ${qty} for "${cat}". Total updated successfully!`);
+  };
+
+  // Admin: Set Exact Count for Category
+  const handleSetExactCount = async () => {
+    const targetVal = parseInt(manualAdjustment.amount, 10);
+    if (isNaN(targetVal) || targetVal < 0) {
+      alert('Please enter a valid amount greater than or equal to 0.');
+      return;
+    }
+
+    const cat = manualAdjustment.category;
+    let baseCount = 0;
+    if (cat === 'Total Members' || cat === 'Total Submissions') baseCount = members.length;
+    else if (cat === 'Verified Members' || cat === 'Completed') baseCount = members.filter(m => m.status === 'APPROVED').length;
+    else if (cat === 'Active Cases' || cat === 'Processing Cases') baseCount = cases.filter(c => c.status !== 'RESOLVED').length;
+    else if (cat === 'Resolved Cases') baseCount = cases.filter(c => c.status === 'RESOLVED').length;
+    else if (cat === 'New (Received)') baseCount = members.filter(m => m.status === 'PENDING').length;
+
+    const newOffset = Math.max(0, targetVal - baseCount);
+    const updatedOffsets = {
+      ...customOffsets,
+      [cat]: newOffset
+    };
+
+    setCustomOffsets(updatedOffsets);
+    localStorage.setItem('ssa_custom_offsets', JSON.stringify(updatedOffsets));
+    calculateStats(members, cases, updatedOffsets);
+
+    try {
+      await fetch('/api/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offsets: updatedOffsets })
+      });
+    } catch (e) {
+      console.warn('Could not save offsets to server:', e);
+    }
+
+    alert(`"${cat}" count set to ${targetVal}. Updated successfully!`);
+  };
+
+  // Admin: Reset all manual count adjustments
+  const handleResetOffsets = async () => {
+    if (!confirm('Are you sure you want to reset all manual adjustment numbers to 0 (real database counts)?')) return;
+    const cleanOffsets = {
+      'Total Members': 0,
+      'Verified Members': 0,
+      'Active Cases': 0,
+      'Resolved Cases': 0,
+      'Total Submissions': 0,
+      'New (Received)': 0,
+      'Processing Cases': 0,
+      'Completed': 0
+    };
+    setCustomOffsets(cleanOffsets);
+    localStorage.setItem('ssa_custom_offsets', JSON.stringify(cleanOffsets));
+    calculateStats(members, cases, cleanOffsets);
+    try {
+      await fetch('/api/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offsets: cleanOffsets })
+      });
+    } catch (e) {
+      console.warn(e);
+    }
+    alert('All manual adjustment counts have been reset to real database values.');
   };
 
   // Admin: Refer Case to Agency
@@ -2500,20 +2577,37 @@ export default function Home() {
                       />
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex flex-wrap gap-2.5 pt-2">
                       <button 
                         type="button"
                         onClick={() => handleApplyAdjustment('ADD')}
-                        className="clay-btn bg-rose-600 text-white font-black text-xs px-6 py-2.5 flex-1 flex items-center justify-center gap-1.5 hover:bg-rose-700 transition-colors shadow-md"
+                        className="clay-btn bg-emerald-600 text-white font-black text-xs px-4 py-2.5 flex-1 flex items-center justify-center gap-1.5 hover:bg-emerald-700 transition-colors shadow-md"
                       >
-                        <Plus size={15} /> Add
+                        <Plus size={15} /> Add ({manualAdjustment.amount || '0'})
                       </button>
                       <button 
                         type="button"
                         onClick={() => handleApplyAdjustment('REMOVE')}
-                        className="clay-btn bg-slate-800 text-white font-black text-xs px-6 py-2.5 flex-1 flex items-center justify-center gap-1.5 hover:bg-slate-900 transition-colors shadow-md"
+                        className="clay-btn bg-amber-600 text-white font-black text-xs px-4 py-2.5 flex-1 flex items-center justify-center gap-1.5 hover:bg-amber-700 transition-colors shadow-md"
                       >
-                        <UserMinus size={15} /> Remove
+                        <UserMinus size={15} /> Remove ({manualAdjustment.amount || '0'})
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={handleSetExactCount}
+                        className="clay-btn bg-blue-600 text-white font-black text-xs px-4 py-2.5 flex-1 flex items-center justify-center gap-1.5 hover:bg-blue-700 transition-colors shadow-md"
+                      >
+                        <Award size={15} /> Set Exact to {manualAdjustment.amount || '0'}
+                      </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-200 flex justify-end">
+                      <button 
+                        type="button"
+                        onClick={handleResetOffsets}
+                        className="text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:underline flex items-center gap-1"
+                      >
+                        <Trash2 size={13} /> Reset All Counts to Real DB Values (0)
                       </button>
                     </div>
                   </div>
