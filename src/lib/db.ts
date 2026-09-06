@@ -105,7 +105,8 @@ const defaultDb = {
       createdAt: new Date().toISOString(),
       author: 'Super Admin'
     }
-  ] as News[]
+  ] as News[],
+  offsets: {} as { [key: string]: number }
 };
 
 function readLocalDb(): typeof defaultDb {
@@ -453,5 +454,17 @@ export const db = {
       if (!isNaN(num) && num > max) max = num;
     });
     return max + 1;
+  },
+
+  async getStatsOffsets(): Promise<{ [key: string]: number }> {
+    const local = readLocalDb();
+    return (local as any).offsets || {};
+  },
+
+  async saveStatsOffsets(offsets: { [key: string]: number }): Promise<{ [key: string]: number }> {
+    const local = readLocalDb();
+    (local as any).offsets = offsets;
+    writeLocalDb(local);
+    return offsets;
   }
 };

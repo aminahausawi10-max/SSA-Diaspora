@@ -148,24 +148,37 @@ export default function Home() {
   // Load and refresh initial data
   const fetchData = async () => {
     try {
+      let currentOffsets = customOffsets;
+      try {
+        const resStats = await fetch('/api/stats');
+        const dataStats = await resStats.json();
+        if (dataStats.success && dataStats.offsets) {
+          currentOffsets = { ...customOffsets, ...dataStats.offsets };
+          setCustomOffsets(currentOffsets);
+          localStorage.setItem('ssa_custom_offsets', JSON.stringify(currentOffsets));
+        }
+      } catch (e) {
+        console.warn('Could not fetch server stats offsets:', e);
+      }
+
       const resNews = await fetch('/api/news');
       const dataNews = await resNews.json();
       if (dataNews.success) setNews(dataNews.news);
 
+      let fetchedMembers: any[] = members;
       const resMembers = await fetch('/api/members');
       const dataMembers = await resMembers.json();
       if (dataMembers.success) {
-        const mems: any[] = (dataMembers.members || []).map((m: any) => ({
+        fetchedMembers = (dataMembers.members || []).map((m: any) => ({
           ...m,
           diasporaId: formatDiasporaId(m.diasporaId)
         }));
-        setMembers(mems);
-        calculateStats(mems, cases);
+        setMembers(fetchedMembers);
 
         // Auto-refresh currentUser if logged in so cached ID is immediately updated to NIG-DIA-xxxxxx
         setCurrentUser((prev: any) => {
           if (!prev) return null;
-          const fresh = mems.find((m: any) => 
+          const fresh = fetchedMembers.find((m: any) => 
             m.id === prev.id || 
             m.account?.email?.toLowerCase() === (prev.account?.email || prev.email)?.toLowerCase()
           );
@@ -183,43 +196,49 @@ export default function Home() {
         });
       }
 
+      let fetchedCases: any[] = cases;
       const resCases = await fetch('/api/cases');
       const dataCases = await resCases.json();
       if (dataCases.success) {
-        const css: any[] = dataCases.cases;
-        setCases(css);
-        calculateStats(members, css);
+        fetchedCases = dataCases.cases || [];
+        setCases(fetchedCases);
       }
+
+      calculateStats(fetchedMembers, fetchedCases, currentOffsets);
     } catch (err) {
       console.error('Error fetching data:', err);
     }
   };
 
-  const calculateStats = (memberList: any[], caseList: any[]) => {
+  const calculateStats = (memberList: any[], caseList: any[], offsets?: { [key: string]: number }) => {
     const mems = memberList || [];
     const css = caseList || [];
+    const currentOffsets = offsets || customOffsets;
     
     const baseTotalMembers = mems.length;
     const baseVerified = mems.filter(m => m.status === 'APPROVED').length;
     const baseCases = css.filter(c => c.status !== 'RESOLVED').length;
     const baseResolved = css.filter(c => c.status === 'RESOLVED').length;
 
-    const totalMembersOffset = customOffsets['Total Members'] || customOffsets['Total Submissions'] || 0;
-    const verifiedOffset = customOffsets['Verified Members'] || customOffsets['Completed'] || 0;
-    const activeCasesOffset = customOffsets['Active Cases'] || customOffsets['Processing Cases'] || 0;
-    const newReceivedOffset = customOffsets['New (Received)'] || 0;
+    const totalMembersOffset = currentOffsets['Total Members'] || currentOffsets['Total Submissions'] || 0;
+    const verifiedOffset = currentOffsets['Verified Members'] || currentOffsets['Completed'] || 0;
+    const activeCasesOffset = currentOffsets['Active Cases'] || currentOffsets['Processing Cases'] || 0;
+    const newReceivedOffset = currentOffsets['New (Received)'] || 0;
+    const resolvedOffset = currentOffsets['Resolved Cases'] || 0;
 
     const statsObj = {
       totalMembers: Math.max(0, baseTotalMembers + totalMembersOffset),
       pendingMembers: mems.filter(m => m.status === 'PENDING').length + (newReceivedOffset),
       verifiedMembers: Math.max(0, baseVerified + verifiedOffset),
       suspendedMembers: mems.filter(m => m.status === 'SUSPENDED').length,
+      activeCases: Math.max(0, baseCases + activeCasesOffset),
       newCases: css.filter(c => c.status === 'SUBMITTED').length + (newReceivedOffset),
       urgentCases: css.filter(c => c.isUrgent).length,
       underReview: css.filter(c => c.status === 'UNDER REVIEW').length,
       referred: css.filter(c => c.status === 'REFERRED').length,
       pendingResponse: css.filter(c => c.status === 'AGENCY RESPONSE').length,
-      resolved: Math.max(0, baseResolved + (customOffsets['Resolved Cases'] || 0))
+      resolved: Math.max(0, baseResolved + resolvedOffset),
+      totalCases: Math.max(0, css.length + activeCasesOffset + resolvedOffset)
     };
     setStats(statsObj);
   };
@@ -592,7 +611,7 @@ export default function Home() {
   };
 
   // Admin: Manual Count Adjustment (Add / Remove)
-  const handleApplyAdjustment = (action: 'ADD' | 'REMOVE') => {
+  const handleApplyAdjustment = async (action: 'ADD' | 'REMOVE') => {
     const qty = parseInt(manualAdjustment.amount, 10);
     if (isNaN(qty) || qty <= 0) {
       alert('Please enter a valid amount greater than 0.');
@@ -610,6 +629,18 @@ export default function Home() {
 
     setCustomOffsets(updatedOffsets);
     localStorage.setItem('ssa_custom_offsets', JSON.stringify(updatedOffsets));
+    calculateStats(members, cases, updatedOffsets);
+
+    try {
+      await fetch('/api/stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offsets: updatedOffsets })
+      });
+    } catch (e) {
+      console.warn('Could not save offsets to server:', e);
+    }
+
     alert(`${action === 'ADD' ? 'Added' : 'Removed'} ${qty} from "${cat}". Total updated successfully.`);
   };
 
@@ -960,7 +991,7 @@ export default function Home() {
                     <FileText size={16} />
                   </div>
                 </div>
-                <p className="text-3xl font-black text-purple-900">{cases.length}</p>
+                <p className="text-3xl font-black text-purple-900">{stats.totalCases}</p>
                 <span className="text-[11px] text-purple-700 font-bold block">Consular & Welfare Handled</span>
               </div>
             </div>
@@ -971,7 +1002,7 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/25">
                   <User size={26} />
                 </div>
-                <h3 className="font-extrabold text-slate-900">1. Online Register</h3>
+                <h3 className="font-extrabold text-slate-900">Online Register</h3>
                 <p className="text-xs text-slate-600 font-medium">6-step secure portal signup</p>
               </div>
 
@@ -979,7 +1010,7 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-blue-500/25">
                   <Award size={26} />
                 </div>
-                <h3 className="font-extrabold text-slate-900">2. Virtual ID Card</h3>
+                <h3 className="font-extrabold text-slate-900">Virtual ID Card</h3>
                 <p className="text-xs text-slate-600 font-medium">Downloadable & printable</p>
               </div>
 
@@ -994,7 +1025,7 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 text-white flex items-center justify-center mx-auto shadow-lg shadow-amber-500/25">
                   <FileText size={26} />
                 </div>
-                <h3 className="font-extrabold text-slate-900">3. Report an Issue</h3>
+                <h3 className="font-extrabold text-slate-900">Report an Issue</h3>
                 <p className="text-xs text-slate-600 font-medium">Consular, legal, & welfare</p>
               </div>
 
@@ -1002,7 +1033,7 @@ export default function Home() {
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-fuchsia-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-purple-500/25">
                   <Shield size={26} />
                 </div>
-                <h3 className="font-extrabold text-slate-900">4. QR Verification</h3>
+                <h3 className="font-extrabold text-slate-900">QR Verification</h3>
                 <p className="text-xs text-slate-600 font-medium">Secure validation engine</p>
               </div>
             </div>
@@ -2402,7 +2433,7 @@ export default function Home() {
                       </div>
                     </div>
                     <p className="text-3xl font-black text-amber-900">
-                      {cases.filter(c => c.status !== 'RESOLVED').length}
+                      {stats.activeCases}
                     </p>
                     <span className="text-[10px] text-rose-600 font-bold block">{stats.urgentCases} flagged urgent</span>
                   </div>
