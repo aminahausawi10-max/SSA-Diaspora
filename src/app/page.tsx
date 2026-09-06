@@ -923,30 +923,30 @@ export default function Home() {
   return (
     <div className="pb-32 min-h-screen">
       {/* HEADER */}
-      <header className="sticky top-0 z-40 w-full bg-white/85 backdrop-blur-xl border-b border-emerald-100/80 px-6 py-4 shadow-sm flex items-center justify-between no-print">
-        <div className="flex items-center gap-3.5">
-          <div className="relative">
-            <img src="/logo.png" className="w-12 h-12 object-contain rounded-2xl shadow-md p-0.5 bg-gradient-to-br from-white to-emerald-50 border border-emerald-200" alt="SSA Diaspora Logo" />
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">✓</span>
+      <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-xl border-b border-emerald-100/80 px-3 py-2 sm:px-6 sm:py-3.5 shadow-sm flex items-center justify-between no-print gap-2">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="relative shrink-0">
+            <img src="/logo.png" className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-xl sm:rounded-2xl shadow-md p-0.5 bg-gradient-to-br from-white to-emerald-50 border border-emerald-200" alt="SSA Diaspora Logo" />
+            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center text-[7px] sm:text-[8px] text-white font-bold">✓</span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black tracking-tight text-slate-900">SSA DIASPORA</h1>
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 hidden sm:inline-block">Official</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h1 className="text-base sm:text-xl font-black tracking-tight text-slate-900 truncate">SSA DIASPORA</h1>
+              <span className="text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 hidden md:inline-block">Official</span>
             </div>
-            <p className="text-xs text-emerald-700 font-bold tracking-tight">Diaspora Platform • Federal Republic of Nigeria</p>
+            <p className="text-[10px] sm:text-xs text-emerald-700 font-semibold tracking-tight truncate">Federal Republic of Nigeria</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {currentUser ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               {userType === 'STAFF' && (
                 <button 
                   onClick={() => setActiveTab('admin')}
-                  className="clay-btn bg-emerald-600 clay-btn-green text-white text-xs px-3.5 py-2 flex items-center gap-1.5 font-bold shadow-md"
+                  className="clay-btn bg-emerald-600 clay-btn-green text-white text-[11px] sm:text-xs px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex items-center gap-1 font-bold shadow-md"
                 >
-                  <Briefcase size={14} /> Admin Dashboard
+                  <Briefcase size={13} /> <span className="hidden sm:inline">Admin Dashboard</span><span className="sm:hidden">Admin</span>
                 </button>
               )}
 
@@ -964,7 +964,7 @@ export default function Home() {
               </div>
               <button 
                 onClick={handleLogout}
-                className="clay-btn clay-btn-red text-xs px-4 py-2"
+                className="clay-btn clay-btn-red text-[11px] sm:text-xs px-2.5 py-1.5 sm:px-4 sm:py-2"
               >
                 Log Out
               </button>
@@ -972,9 +972,9 @@ export default function Home() {
           ) : (
             <button 
               onClick={() => setActiveTab('portal')}
-              className="clay-btn clay-btn-green text-xs px-5 py-2 font-bold text-white shadow-md"
+              className="clay-btn clay-btn-green text-[11px] sm:text-xs px-3.5 py-1.5 sm:px-5 sm:py-2 font-bold text-white shadow-md"
             >
-              Sign In / Member Portal
+              Sign In <span className="hidden sm:inline">/ Member Portal</span>
             </button>
           )}
         </div>
