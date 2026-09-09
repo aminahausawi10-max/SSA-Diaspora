@@ -934,6 +934,7 @@ export default function Home() {
               <h1 className="text-base sm:text-xl font-black tracking-tight text-slate-900 truncate">DDS</h1>
               <span className="text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 hidden md:inline-block">Official</span>
             </div>
+            <p className="text-[9px] sm:text-[11px] text-slate-600 font-semibold tracking-tight truncate">Diaspora Diplomatic Support</p>
             <p className="text-[10px] sm:text-xs text-emerald-700 font-semibold tracking-tight truncate">Federal Republic of Nigeria</p>
           </div>
         </div>
