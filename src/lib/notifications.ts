@@ -109,37 +109,37 @@ export const notifications = {
 
   // Templates
   async sendWelcomeNotification(email: string, name: string, phone?: string) {
-    const subject = 'Welcome to SSA Diaspora Portal';
+    const subject = 'Welcome to DDS Portal';
     const html = `
       <div style="font-family: sans-serif; padding: 20px; color: #333;">
-        <h2>Welcome to SSA Diaspora, ${name}!</h2>
+        <h2>Welcome to DDS, ${name}!</h2>
         <p>Your registration has been submitted successfully and is currently <strong>PENDING VERIFICATION</strong>.</p>
         <p>Our Verification Officers are reviewing your passport and NIN details. You will receive an email as soon as your Diaspora ID is generated.</p>
         <hr style="border: 0; border-top: 1px solid #eee;" />
-        <p style="font-size: 11px; color: #666;">This is an official communication from the SSA Diaspora Office, Abuja, Nigeria.</p>
+        <p style="font-size: 11px; color: #666;">This is an official communication from the DDS Office, Abuja, Nigeria.</p>
       </div>
     `;
     await this.sendEmail(email, subject, html);
     if (phone) {
-      await this.sendSMS(phone, `Hello ${name}, your SSA Diaspora account registration is successful. Status: PENDING VERIFICATION.`);
+      await this.sendSMS(phone, `Hello ${name}, your DDS account registration is successful. Status: PENDING VERIFICATION.`);
     }
   },
 
   async sendApprovalNotification(email: string, name: string, diasporaId: string, phone?: string) {
-    const subject = 'SSA Diaspora Account Approved - ID Generated';
+    const subject = 'DDS Account Approved - ID Generated';
     const html = `
       <div style="font-family: sans-serif; padding: 20px; color: #333;">
         <h2 style="color: #10b981;">Congratulations ${name}!</h2>
-        <p>Your SSA Diaspora account has been verified and approved.</p>
+        <p>Your DDS account has been verified and approved.</p>
         <p>Your Unique Diaspora ID Number: <strong>${diasporaId}</strong></p>
         <p>You can now sign in to your Portal to view, download, or print your Virtual ID Card.</p>
         <hr style="border: 0; border-top: 1px solid #eee;" />
-        <p style="font-size: 11px; color: #666;">This is an official communication from the SSA Diaspora Office, Abuja, Nigeria.</p>
+        <p style="font-size: 11px; color: #666;">This is an official communication from the DDS Office, Abuja, Nigeria.</p>
       </div>
     `;
     await this.sendEmail(email, subject, html);
     if (phone) {
-      await this.sendSMS(phone, `Hello ${name}, your SSA Diaspora account is approved! ID: ${diasporaId}. Login to download your Virtual ID card.`);
+      await this.sendSMS(phone, `Hello ${name}, your DDS account is approved! ID: ${diasporaId}. Login to download your Virtual ID card.`);
     }
   },
 
@@ -153,32 +153,32 @@ export const notifications = {
         <p><strong>Update Notes:</strong> ${notes}</p>
         <p>Log in to your member portal to view full case logs.</p>
         <hr style="border: 0; border-top: 1px solid #eee;" />
-        <p style="font-size: 11px; color: #666;">This is an official communication from the SSA Diaspora Office, Abuja, Nigeria.</p>
+        <p style="font-size: 11px; color: #666;">This is an official communication from the DDS Office, Abuja, Nigeria.</p>
       </div>
     `;
     await this.sendEmail(email, subject, html);
     if (phone) {
-      await this.sendSMS(phone, `SSA Case Update: ${caseNumber} is now ${status}. Details: ${notes.slice(0, 50)}...`);
+      await this.sendSMS(phone, `DDS Case Update: ${caseNumber} is now ${status}. Details: ${notes.slice(0, 50)}...`);
     }
   },
 
   async sendLoginNotification(email: string, name: string, loginTime?: string, phone?: string) {
     const timeStr = loginTime || new Date().toLocaleString();
-    const subject = 'Sign-in Notification — SSA Diaspora Portal';
+    const subject = 'Sign-in Notification — DDS Portal';
     const html = `
       <div style="font-family: sans-serif; padding: 20px; color: #333;">
-        <h2 style="color: #10b981;">SSA Diaspora Sign-In Notification</h2>
+        <h2 style="color: #10b981;">DDS Sign-In Notification</h2>
         <p>Hello <strong>${name}</strong>,</p>
-        <p>You have successfully signed in to the <strong>SSA Diaspora Support Platform</strong>.</p>
+        <p>You have successfully signed in to the <strong>DDS — Diaspora Diplomatic Support Platform</strong>.</p>
         <p><strong>Sign-in Time:</strong> ${timeStr}</p>
-        <p>If you did not perform this login, please contact the SSA Diaspora Security Team immediately.</p>
+        <p>If you did not perform this login, please contact the DDS Security Team immediately.</p>
         <hr style="border: 0; border-top: 1px solid #eee;" />
-        <p style="font-size: 11px; color: #666;">This is an official security alert from the SSA Diaspora Office, Abuja, Nigeria.</p>
+        <p style="font-size: 11px; color: #666;">This is an official security alert from the DDS Office, Abuja, Nigeria.</p>
       </div>
     `;
     await this.sendEmail(email, subject, html);
     if (phone) {
-      await this.sendSMS(phone, `SSA Diaspora Alert: Successful login to your account at ${timeStr}.`);
+      await this.sendSMS(phone, `DDS Alert: Successful login to your account at ${timeStr}.`);
     }
   }
 };

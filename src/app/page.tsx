@@ -926,12 +926,12 @@ export default function Home() {
       <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-xl border-b border-emerald-100/80 px-3 py-2 sm:px-6 sm:py-3.5 shadow-sm flex items-center justify-between no-print gap-2">
         <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
           <div className="relative shrink-0">
-            <img src="/logo.png" className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-xl sm:rounded-2xl shadow-md p-0.5 bg-gradient-to-br from-white to-emerald-50 border border-emerald-200" alt="SSA Diaspora Logo" />
+            <img src="/logo.png" className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-xl sm:rounded-2xl shadow-md p-0.5 bg-gradient-to-br from-white to-emerald-50 border border-emerald-200" alt="DDS Logo" />
             <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center text-[7px] sm:text-[8px] text-white font-bold">✓</span>
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <h1 className="text-base sm:text-xl font-black tracking-tight text-slate-900 truncate">SSA DIASPORA</h1>
+              <h1 className="text-base sm:text-xl font-black tracking-tight text-slate-900 truncate">DDS</h1>
               <span className="text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 hidden md:inline-block">Official</span>
             </div>
             <p className="text-[10px] sm:text-xs text-emerald-700 font-semibold tracking-tight truncate">Federal Republic of Nigeria</p>
@@ -1182,7 +1182,7 @@ export default function Home() {
                   <div className="flex gap-3 items-start">
                     <MapPin className="text-slate-400 shrink-0 mt-1" size={18} />
                     <p>
-                      SSA Diaspora Coordination Office,<br />
+                      DDS Coordination Office,<br />
                       Wuse Zone 5, Abuja,<br />
                       Federal Capital Territory of Nigeria.
                     </p>
@@ -1993,7 +1993,7 @@ export default function Home() {
                           {/* Footer & QR Code */}
                           <div className="flex justify-between items-end border-t border-slate-200/60 pt-2.5">
                             <span className="text-[8px] text-slate-400 font-bold uppercase tracking-wider">
-                              Digital Membership Card • SSA Diaspora Platform
+                              Digital Membership Card • DDS Platform
                             </span>
                             
                             {/* Dynamic QR Code link */}
