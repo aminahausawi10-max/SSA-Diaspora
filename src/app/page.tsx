@@ -1053,7 +1053,7 @@ export default function Home() {
 
               <div className="clay-card clay-card-amber p-5 space-y-1 relative overflow-hidden transition-all hover:scale-[1.02]">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-amber-800 font-bold uppercase tracking-wider">Country Desks</span>
+                  <span className="text-[10px] text-amber-800 font-bold uppercase tracking-wider">Active Cases</span>
                   <div className="w-8 h-8 rounded-xl bg-amber-200/60 text-amber-800 flex items-center justify-center font-bold">
                     <Globe size={16} />
                   </div>
@@ -2618,7 +2618,7 @@ export default function Home() {
                 <div className="clay-card p-4 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
                     <Globe size={18} className="text-emerald-600" />
-                    <span className="text-sm font-bold text-slate-700">Country Desk Filter:</span>
+                    <span className="text-sm font-bold text-slate-700">Active Cases Filter:</span>
                   </div>
                   <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1">
                     {['All', ...SUPPORTED_COUNTRIES].map((desk) => (
